@@ -6,6 +6,7 @@
   "scripts": {
     "dev:server": "COMPOSER_URL=http://localhost:1234 micro-dev",
     "dev:client": "parcel src/index.html",
+    "dev": "yarn dev:server & yarn dev:client & micro-proxy -r local-proxy-rules.json -p 9000",
     "build": "parcel build src/index.html",
     "deploy": "now"
   },
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@vue/component-compiler-utils": "3.0.0",
     "micro-dev": "^3.0.0",
+    "micro-proxy": "1.1.0",
     "parcel-bundler": "1.12.3",
     "puppeteer": "1.14.0",
     "vue-template-compiler": "2.6.10"
