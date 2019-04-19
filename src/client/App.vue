@@ -1,7 +1,12 @@
 <template>
   <div class="App">
-    <form class="input">
-      <input type="text" placeholder="Text overlay" v-model="text" />
+    <form class="input" :action="'/r/' + query.preset">
+      <input
+        type="text"
+        placeholder="Text overlay"
+        name="text"
+        v-model="text"
+      />
       <button>Render</button>
     </form>
     <Composer
