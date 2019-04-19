@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "dist/*", "use": "@now/static" },
+    { "src": "public/*", "use": "@now/static" },
+    {
+      "src": "src/index.js",
+      "use": "@now/node",
+      "config": { "maxLambdaSize": "40mb" }
+    }
+  ],
+  "routes": [
+    { "src": "/r/(.*)", "dest": "/src/index.js" },
+    { "src": "/(.*)", "dest": "/dist/$1" }
+  ]
+}
