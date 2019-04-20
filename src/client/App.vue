@@ -1,113 +1,79 @@
 <template>
   <div class="App">
-    <form class="input" :action="'/r/' + query.preset">
-      <input
-        type="text"
-        placeholder="Text overlay"
-        name="text"
-        v-model="text"
-      />
-      <button>Render</button>
-    </form>
-    <Composer
-      :bg-images="backgroundImages"
-      :fg-images="foregroundImages"
-      :text="text"
-      :text-style="textStyle"
+    <Toolbar
+      :presets="presets"
+      :initial-text="$route.query.text"
+      @input="handleTextInput"
     />
+    <main>
+      <Stage
+        :preset="selectedPreset"
+        :text="$route.query.text"
+        ref="stage"
+      />
+    </main>
   </div>
 </template>
 
 <script>
-import { parse, stringify } from 'query-string';
-import { PRESETS } from '../constants';
-import Composer from './Composer';
-const query = parse(window.location.hash.slice(1));
+import presets from '../presets';
+import Toolbar from './Toolbar';
+import Stage from './Stage';
 
 export default {
   components: {
-    Composer,
+    Toolbar,
+    Stage,
   },
   data() {
     return {
-      query,
-      text: query.text,
+      presets,
+      fontLoaded: false,
     };
   },
   computed: {
-    backgroundImages() {
-      try {
-        return PRESETS[this.query.preset].bg;
-      } catch (e) {
-        return [];
+    selectedPreset() {
+      const presetName = this.$route.params.preset;
+      const preset = presets[presetName];
+      if (!preset) {
+        console.log(`No preset '${presetName}' found`);
       }
-    },
-    foregroundImages() {
-      try {
-        return PRESETS[this.query.preset].fg;
-      } catch (e) {
-        return [];
-      }
-    },
-    textStyle() {
-      try {
-        return PRESETS[this.query.preset].style;
-      } catch (e) {
-        return {};
-      }
+      return preset;
     },
   },
-  watch: {
-    text(text) {
-      const currentQuery = parse(window.location.hash);
-      window.location.hash = stringify({ ...currentQuery, text });
+  methods: {
+    handleTextInput(value) {
+      this.$router.replace({
+        name: 'preset',
+        params: { preset: this.$route.params.preset },
+        query: {
+          ...this.$route.query,
+          text: value,
+        },
+      });
     },
-  },
-  created() {
-    window.onhashchange = evt => {
-      this.text = parse(evt.newURL.split('#')[1]).text;
-    };
+    updateStage() {
+      console.log(this.$refs.stage);
+    }
   },
 };
 </script>
 
 <style>
-.input {
-  position: absolute;
-  top: 100px;
-  left: 0;
-  right: 0;
-  margin: auto;
-  width: 500px;
-  padding: 10px;
-  display: flex;
-  background-color: #fff5;
-  box-shadow: 0 1px 10px rgba(0, 0, 0, 0.7);
-}
-
-input,
-button {
-  padding: 5px;
-  font-size: 1em;
-}
-
-input {
-  flex-grow: 1;
-  color: #333;
-  border: 1px solid #ccc;
-}
-
-input:focus {
-  position: relative;
-}
-
-button {
-  border: 0;
-  padding-left: 10px;
-  padding-right: 10px;
-  text-decoration: none;
-  cursor: pointer;
-  background-color: #0009;
+.App {
+  font: 16px Helvetica, sans-serif;
+  background-color: #222;
   color: #fff;
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

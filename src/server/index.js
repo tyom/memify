@@ -1,8 +1,8 @@
 const validator = require('validator');
 const { send } = require('micro');
 const { router, get } = require('microrouter');
+const presets = require('../presets');
 const { renderImage } = require('./render');
-const { PRESETS } = require('./constants');
 
 const urlValidatorOptions = {
   require_tld: true,
@@ -27,7 +27,7 @@ async function renderer(req, res) {
   const isValidUrl = validator.isURL(imageUrl, urlValidatorOptions);
   const image = configureImage({ preset, ...req.query });
 
-  if (Object.keys(PRESETS).includes(preset) || isValidUrl) {
+  if (Object.keys(presets).includes(preset) || isValidUrl) {
     return image(req, res);
   }
 
