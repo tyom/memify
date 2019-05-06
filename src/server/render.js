@@ -24,10 +24,10 @@ async function renderImage(composerUrl, { format = 'jpeg', preset, ...query }) {
   });
 
   const queryString = qs.stringify(query);
-  const pageUrl = `${composerUrl}#/${preset}?${queryString}`;
+  const pageUrl = `${composerUrl}/#/${preset}?${queryString}`;
   const page = await browser.newPage();
 
-  await page.goto(pageUrl);
+  await page.goto(pageUrl, { waitUntil: 'networkidle0' });
 
   await page.evaluate(() => {
     document.querySelector('.v-toolbar').style.display = 'none';

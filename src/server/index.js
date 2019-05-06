@@ -1,14 +1,7 @@
-const validator = require('validator');
 const { send } = require('micro');
 const { router, get } = require('microrouter');
-const presets = require('../presets');
+const { isValidUrl } = require('../utils');
 const { renderImage } = require('./render');
-
-const urlValidatorOptions = {
-  require_tld: true,
-  require_protocol: true,
-  allow_protocol_relative_urls: true,
-};
 
 const error = (code = 404, message = 'Not Found') => (req, res) => {
   return send(res, code, message);
@@ -23,11 +16,10 @@ const configureImage = options => async (req, res) => {
 
 async function renderer(req, res) {
   const preset = req.params.preset || '';
-  const imageUrl = req.query.imageUrl || '';
-  const isValidUrl = validator.isURL(imageUrl, urlValidatorOptions);
-  const image = configureImage({ preset, ...req.query });
+  const presetUrl = req.query.presetUrl || '';
 
-  if (Object.keys(presets).includes(preset) || isValidUrl) {
+  if (isValidUrl(presetUrl)) {
+    const image = configureImage({ preset, ...req.query });
     return image(req, res);
   }
 

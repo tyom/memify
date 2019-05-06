@@ -1,37 +1,42 @@
 <template>
   <v-app dark>
     <Toolbar
+      v-if="preset"
       :text="$route.query.text"
-      :presets="presets"
+      :preset="preset"
       @render="handleRender"
       @text-input="handleTextInput"
     />
     <v-container fluid fill-height>
       <v-layout align-center justify-center>
-        <Stage
-          v-if="selectedPreset"
-          :preset="selectedPreset"
-          :text="$route.query.text"
-          ref="stage"
-        />
-        <PresetMenu
-          v-else
-          v-slot:default="{ on }"
-          :presets="presets"
-        >
-          <v-btn v-on="on">
-            Select preset item
-          </v-btn>
-        </PresetMenu>
+        <template v-if="isValidPresetUrl">
+          <Stage
+            v-if="selectedPreset"
+            :preset="selectedPreset"
+            :text="$route.query.text"
+            ref="stage"
+          />
+          <PresetMenu
+            v-else-if="!$route.params.preset"
+            v-slot:default="{ on }"
+            :preset="preset"
+          >
+            <v-btn v-on="on">
+              Select preset item
+            </v-btn>
+          </PresetMenu>
+        </template>
+        <PresetSelection v-else />
       </v-layout>
     </v-container>
   </v-app>
 </template>
 
 <script>
-import presets from '../presets';
+import { isValidUrl } from '../utils';
 import Toolbar from './Toolbar';
 import PresetMenu from './PresetMenu';
+import PresetSelection from './PresetSelection';
 import Stage from './Stage';
 
 export default {
@@ -39,20 +44,38 @@ export default {
     Toolbar,
     Stage,
     PresetMenu,
+    PresetSelection,
   },
   data() {
     return {
-      presets,
+      preset: null,
     };
   },
   computed: {
+    isValidPresetUrl() {
+      return isValidUrl(this.$route.query.presetUrl || '');
+    },
     selectedPreset() {
-      const presetName = this.$route.params.preset;
-      const preset = presets[presetName];
-      if (!preset) {
-        console.log(`No preset '${presetName}' found`);
+      if (!this.preset) {
+        return;
       }
-      return preset;
+      const presetName = this.$route.params.preset;
+      return this.preset[presetName];
+    },
+  },
+  watch: {
+    '$route.query': {
+      immediate: true,
+      handler({ presetUrl }) {
+        if (!presetUrl) {
+          return;
+        }
+        fetch(presetUrl)
+          .then(res => res.json())
+          .then(data => {
+            this.preset = data;
+          });
+      },
     },
   },
   methods: {

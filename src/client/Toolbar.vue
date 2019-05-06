@@ -1,6 +1,6 @@
 <template>
   <v-toolbar app dense>
-    <PresetMenu v-slot:default="{ on }" :presets="presets">
+    <PresetMenu v-slot:default="{ on }" :preset="preset">
       <v-toolbar-side-icon v-on="on" />
     </PresetMenu>
     <v-form @submit.prevent="$emit('render')" grow>
@@ -34,7 +34,7 @@ export default {
     PresetMenu,
   },
   props: {
-    presets: {
+    preset: {
       type: Object,
       default: () => ({}),
     },
@@ -65,7 +65,8 @@ export default {
 
 .v-input__control {
   min-height: 36px !important;
-  margin: 6px !important;
+  margin-top: 6px !important;
+  margin-bottom: 6px !important;
 }
 
 .v-list__tile.v-list__tile--avatar {
