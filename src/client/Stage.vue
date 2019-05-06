@@ -1,11 +1,5 @@
 <template>
   <div>
-    <link
-      v-if="preset.font"
-      :href="preset.font.url"
-      rel="stylesheet"
-      @load="handleFont"
-    />
     <v-stage
       ref="stage"
       class="Composer"
@@ -40,6 +34,7 @@
 </template>
 
 <script>
+import WebFont from 'webfontloader';
 import CanvasImage from './CanvasImage';
 
 export default {
@@ -69,7 +64,7 @@ export default {
       },
       textConfig: {},
       selectedShapeName: '',
-      fontLoaded: !this.preset.font,
+      fontLoaded: !this.preset.webfont,
     };
   },
   watch: {
@@ -85,16 +80,18 @@ export default {
       this.selectedShapeName = '';
       this.updateTransformer();
     });
-  },
-  methods: {
-    handleFont() {
-      setTimeout(() => {
+
+    WebFont.load({
+      ...this.preset.webfont,
+      active: () => {
         this.fontLoaded = true;
         const text = this.$refs.textLayer.getNode();
         text.text(this.text);
         text.draw();
-      }, 100);
-    },
+      }
+    })
+  },
+  methods: {
     handleStageMouseDown(evt) {
       // Clicked on stage - clear selection
       if (!evt.target.draggable() || evt.target === evt.target.getStage()) {

@@ -27,15 +27,12 @@ async function renderImage(composerUrl, { format = 'jpeg', preset, ...query }) {
   const pageUrl = `${composerUrl}#/${preset}?${queryString}`;
   const page = await browser.newPage();
 
-  const response = await page.goto(pageUrl);
-
-  // Wait for custom fonts to load (in dev only)
-  if (!isProd) {
-    await page.setContent((await response.buffer()).toString('utf8'));
-    await page.evaluateHandle('document.fonts.ready');
-  }
+  await page.goto(pageUrl);
 
   const image = await page.$('.Composer');
+  if (preset.webfont) {
+    await page.waitForSelector('.wf-active'); // web font loaded
+  }
   const file = await image.screenshot({ type: format });
   await browser.close();
   return file;

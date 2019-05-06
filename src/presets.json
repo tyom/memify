@@ -30,9 +30,10 @@
       "width": 500,
       "height": 436
     },
-    "font": {
-      "name": "Kavivanar",
-      "url": "https://fonts.googleapis.com/css?family=Kavivanar"
+    "webfont": {
+      "google": {
+        "families": ["Kavivanar"]
+      }
     },
     "text": {
       "x": 10,
