@@ -1,26 +1,8 @@
 <template>
   <v-toolbar app dense>
-    <v-menu :close-on-content-click="false">
-      <template v-slot:activator="{ on }">
-        <v-toolbar-side-icon v-on="on" />
-      </template>
-      <v-list subheader>
-        <v-subheader>Preset items</v-subheader>
-        <v-list-tile
-          v-for="(preset, key) in presets"
-          :key="key"
-          :to="{ name: 'preset', params: { preset: key }, query: $route.query }"
-          avatar
-        >
-          <v-list-tile-avatar tile size="56">
-            <v-img :src="preset.bgr.url" />
-          </v-list-tile-avatar>
-          <v-list-tile-content>
-            <v-list-tile-title v-html="preset.name" />
-          </v-list-tile-content>
-        </v-list-tile>
-      </v-list>
-    </v-menu>
+    <PresetMenu v-slot:default="{ on }" :presets="presets">
+      <v-toolbar-side-icon v-on="on" />
+    </PresetMenu>
     <v-form @submit.prevent="$emit('render')" grow>
       <v-layout>
         <v-flex>
@@ -45,7 +27,12 @@
 </template>
 
 <script>
+import PresetMenu from './PresetMenu';
+
 export default {
+  components: {
+    PresetMenu,
+  },
   props: {
     presets: {
       type: Object,

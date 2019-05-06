@@ -8,7 +8,21 @@
     />
     <v-container fluid fill-height>
       <v-layout align-center justify-center>
-        <Stage :preset="selectedPreset" :text="$route.query.text" ref="stage" />
+        <Stage
+          v-if="selectedPreset"
+          :preset="selectedPreset"
+          :text="$route.query.text"
+          ref="stage"
+        />
+        <PresetMenu
+          v-else
+          v-slot:default="{ on }"
+          :presets="presets"
+        >
+          <v-btn v-on="on">
+            Select preset item
+          </v-btn>
+        </PresetMenu>
       </v-layout>
     </v-container>
   </v-app>
@@ -17,17 +31,18 @@
 <script>
 import presets from '../presets';
 import Toolbar from './Toolbar';
+import PresetMenu from './PresetMenu';
 import Stage from './Stage';
 
 export default {
   components: {
     Toolbar,
     Stage,
+    PresetMenu,
   },
   data() {
     return {
       presets,
-      fontLoaded: false,
     };
   },
   computed: {
