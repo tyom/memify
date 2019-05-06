@@ -11,7 +11,8 @@
     "build": "parcel build src/client/index.html",
     "now-build": "yarn build",
     "lint": "eslint src --ext .js,.vue .",
-    "deploy": "now"
+    "deploy": "now",
+    "deploy:production": "yarn deploy --target production"
   },
   "dependencies": {
     "chrome-aws-lambda": "1.15.1",
