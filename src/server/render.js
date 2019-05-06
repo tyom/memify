@@ -29,6 +29,10 @@ async function renderImage(composerUrl, { format = 'jpeg', preset, ...query }) {
 
   await page.goto(pageUrl);
 
+  await page.evaluate(() => {
+    document.querySelector('.v-toolbar').style.display = 'none';
+  });
+
   const image = await page.$('.Composer');
   if (preset.webfont) {
     await page.waitForSelector('.wf-active'); // web font loaded

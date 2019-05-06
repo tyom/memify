@@ -1,18 +1,17 @@
 <template>
-  <div class="App">
+  <v-app dark>
     <Toolbar
+      :text="$route.query.text"
       :presets="presets"
-      :initial-text="$route.query.text"
-      @input="handleTextInput"
+      @render="handleRender"
+      @text-input="handleTextInput"
     />
-    <main>
-      <Stage
-        :preset="selectedPreset"
-        :text="$route.query.text"
-        ref="stage"
-      />
-    </main>
-  </div>
+    <v-container fluid fill-height>
+      <v-layout align-center justify-center>
+        <Stage :preset="selectedPreset" :text="$route.query.text" ref="stage" />
+      </v-layout>
+    </v-container>
+  </v-app>
 </template>
 
 <script>
@@ -52,28 +51,17 @@ export default {
         },
       });
     },
-    updateStage() {
-      console.log(this.$refs.stage);
-    }
+    handleRender() {
+      window.location.href = this.$router
+        .resolve(this.$route)
+        .href.replace('#', '/r');
+    },
   },
 };
 </script>
 
 <style>
-.App {
-  font: 16px Helvetica, sans-serif;
-  background-color: #222;
-  color: #fff;
-  display: grid;
-  grid-template-rows: auto 1fr;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
-}
-
-main {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+html {
+  background-color: #303030;
 }
 </style>

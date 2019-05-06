@@ -1,44 +1,47 @@
 <template>
-  <div class="Toolbar">
-    <div class="row">
-      <button
-        type="button"
-        class="toggle"
-        @click="handlePresetToggle"
-      >
-        Presets
-      </button>
-      <form :action="`/r/${$route.params.preset}`">
-        <textarea
-          autofocus
-          class="text-input"
-          name="text"
-          placeholder="Text overlay"
-          :value="initialText"
-          @input="$emit('input', $event.target.value)"
-        ></textarea>
-        <button>Render</button>
-      </form>
-    </div>
-    <div v-if="expanded" class="presets">
-      <div class="row">
-        <router-link
+  <v-toolbar app dense>
+    <v-menu :close-on-content-click="false">
+      <template v-slot:activator="{ on }">
+        <v-toolbar-side-icon v-on="on" />
+      </template>
+      <v-list subheader>
+        <v-subheader>Preset items</v-subheader>
+        <v-list-tile
           v-for="(preset, key) in presets"
           :key="key"
           :to="{ name: 'preset', params: { preset: key }, query: $route.query }"
-          class="preset-link"
+          avatar
         >
-          {{ preset.name }}
-          <img
-            v-if="preset.bgr"
-            :src="preset.bgr.url"
-            class="preset-thumb"
-            alt=""
+          <v-list-tile-avatar tile size="56">
+            <v-img :src="preset.bgr.url" />
+          </v-list-tile-avatar>
+          <v-list-tile-content>
+            <v-list-tile-title v-html="preset.name" />
+          </v-list-tile-content>
+        </v-list-tile>
+      </v-list>
+    </v-menu>
+    <v-form @submit.prevent="$emit('render')" grow>
+      <v-layout>
+        <v-flex>
+          <v-text-field
+            :value="text"
+            @input="$emit('text-input', $event)"
+            autofocus
+            flat
+            solo-inverted
+            hide-details
+            label="Overlay text"
           />
-        </router-link>
-      </div>
-    </div>
-  </div>
+        </v-flex>
+        <v-flex shrink>
+          <v-btn type="submit" flat>
+            Render
+          </v-btn>
+        </v-flex>
+      </v-layout>
+    </v-form>
+  </v-toolbar>
 </template>
 
 <script>
@@ -48,98 +51,46 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    initialText: {
+    text: {
       type: String,
       default: '',
     },
-  },
-  data() {
-    return {
-      text: '',
-      expanded: false,
-    };
   },
   methods: {
     handlePresetToggle() {
       this.expanded = !this.expanded;
     },
+    handlePresetSelection(key) {
+      this.$router.push({
+        name: 'preset',
+        params: { preset: key },
+        query: this.$route.query,
+      });
+    },
   },
 };
 </script>
 
-<style scoped>
-.Toolbar {
-  padding: 10px;
-  grid-gap: 10px;
-  background-color: #fff3;
-  align-items: stretch;
-}
-
-.row {
-  display: flex;
-}
-
-form {
-  display: flex;
-  margin: 0;
+<style>
+.v-form {
   flex: 1;
 }
 
-.text-input,
-button {
-  padding: 10px;
-  font-size: 1em;
+.v-input__control {
+  min-height: 36px !important;
+  margin: 6px !important;
 }
 
-button:focus {
-  position: relative;
+.v-list__tile.v-list__tile--avatar {
+  height: 70px;
 }
 
-.text-input {
-  flex-grow: 1;
-  height: 2.5em;
-  color: #333;
-  border: 0;
+.v-list__tile__content {
+  padding-left: 8px;
 }
 
-.text-input:focus {
-  position: relative;
-}
-
-button {
-  border: 0;
-  padding-left: 20px;
-  padding-right: 20px;
-  text-decoration: none;
-  cursor: pointer;
-  background-color: #0009;
-  color: #fff;
-}
-
-.presets {
-  margin: 10px 0 0;
-  background-color: #0004;
-}
-
-.preset-link {
-  padding: 10px;
-  display: block;
-  font-size: 1.2em;
-  color: #fff;
-  text-decoration: none;
-}
-
-.preset-link:hover {
-  background-color: #0004;
-}
-
-.preset-thumb {
-  display: block;
-  width: 120px;
-  margin-top: 10px;
-}
-
-.preset-link.router-link-active {
-  background-color: #0009;
+.primary--text.v-list__tile--active {
+  background-color: #0006 !important;
+  color: #fff !important;
 }
 </style>
