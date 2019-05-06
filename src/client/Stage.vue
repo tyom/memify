@@ -58,18 +58,19 @@ export default {
   },
   data() {
     return {
-      stageConfig: {
-        width: this.preset.bgr.width,
-        height: this.preset.bgr.height,
-      },
+      stageConfig: {},
       textConfig: {},
       selectedShapeName: '',
       fontLoaded: !this.preset.webfont,
     };
   },
   watch: {
-    '$route.params.preset'() {
-      this.$refs.stage.getNode().draw();
+    '$route.params.preset': {
+      immediate: true,
+      handler() {
+        this.stageConfig.height = this.preset.bgr.height;
+        this.stageConfig.width = this.preset.bgr.width;
+      },
     },
   },
   mounted() {
@@ -88,8 +89,8 @@ export default {
         const text = this.$refs.textLayer.getNode();
         text.text(this.text);
         text.draw();
-      }
-    })
+      },
+    });
   },
   methods: {
     handleStageMouseDown(evt) {
