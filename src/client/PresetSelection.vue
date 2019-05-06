@@ -42,7 +42,12 @@
                 </v-btn>
               </v-flex>
             </v-layout>
-            <p>e.g. https://api.myjson.com/bins/1gqsgk</p>
+            <p class="example-url">
+              e.g.
+              <a :href="examplePresetUrl" @click.prevent="handleExampleLink">
+                {{ examplePresetUrl }}
+              </a>
+            </p>
           </v-form>
         </v-card-text>
 
@@ -53,6 +58,7 @@
                 flat
                 small
                 v-on="on"
+                @click="handleShowExample"
               >
                 Show example preset
               </v-btn>
@@ -60,39 +66,13 @@
             <v-card>
               <v-card-title>
                 <h2 class="headline">
-                  JSON example of preset
+                  Example preset JSON
                 </h2>
               </v-card-title>
               <v-divider />
               <v-card-text>
-                <pre>
-  {
-    "aliens": {
-      "name": "Aliens",
-      "bgr": {
-        "url": "https://i.imgur.com/1PCyDuD.jpg",
-        "width": 500,
-        "height": 436
-      },
-      "webfont": {
-        "google": {
-          "families": ["Kavivanar"]
-        }
-      },
-      "text": {
-        "x": 10,
-        "y": 10,
-        "width": 460,
-        "height": 100,
-        "fill": "#fff",
-        "fontSize": 30,
-        "fontFamily": "Kavivanar",
-        "align": "center",
-        "verticalAlign": "middle"
-      }
-    }
-  }
-                </pre>
+                <pre v-if="presetExampleData">{{ presetExampleData }}</pre>
+                <v-progress-linear v-else :indeterminate="true" />
               </v-card-text>
             </v-card>
           </v-dialog>
@@ -109,6 +89,8 @@ export default {
   data() {
     return {
       presetUrl: this.$route.query.presetUrl || '',
+      examplePresetUrl: 'https://api.myjson.com/bins/1gqsgk',
+      presetExampleData: '',
       urlRules: [
         v => !!v || 'URL is required',
         v => isValidUrl(v) || 'URL is invalid',
@@ -126,6 +108,22 @@ export default {
         this.$router.push({ query: { presetUrl: this.presetUrl } });
       }
     },
+    handleShowExample() {
+      fetch(this.examplePresetUrl)
+        .then(res => res.json())
+        .then(data => {
+          this.presetExampleData = data;
+        });
+    },
+    handleExampleLink(evt) {
+      this.presetUrl = evt.target.href;
+    }
   },
 };
 </script>
+
+<style scoped>
+.example-url a {
+  color: #fff;
+}
+</style>
