@@ -61,7 +61,7 @@ export default {
       stageConfig: {},
       textConfig: {},
       selectedShapeName: '',
-      fontLoaded: !this.preset.webfont,
+      webFontLoaded: false,
     };
   },
   watch: {
@@ -70,8 +70,14 @@ export default {
       handler() {
         this.stageConfig.height = this.preset.bgr.height;
         this.stageConfig.width = this.preset.bgr.width;
+        this.handleWebFont();
       },
     },
+  },
+  computed: {
+    fontLoaded() {
+      return this.preset.webfont ? this.webFontLoaded : true;
+    }
   },
   mounted() {
     window.addEventListener('click', evt => {
@@ -81,18 +87,24 @@ export default {
       this.selectedShapeName = '';
       this.updateTransformer();
     });
-
-    WebFont.load({
-      ...this.preset.webfont,
-      active: () => {
-        this.fontLoaded = true;
-        const text = this.$refs.textLayer.getNode();
-        text.text(this.text);
-        text.draw();
-      },
-    });
   },
   methods: {
+    handleWebFont() {
+      if (!this.preset.webfont) {
+        this.webFontLoaded = false;
+        return;
+      }
+
+      WebFont.load({
+        ...this.preset.webfont,
+        active: () => {
+          this.webFontLoaded = true;
+          const text = this.$refs.textLayer.getNode();
+          text.text(this.text);
+          text.draw();
+        },
+      });
+    },
     handleStageMouseDown(evt) {
       // Clicked on stage - clear selection
       if (!evt.target.draggable() || evt.target === evt.target.getStage()) {
