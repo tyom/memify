@@ -6,7 +6,8 @@
   "scripts": {
     "dev:server": "COMPOSER_URL=http://localhost:1234 micro-dev",
     "dev:client": "parcel src/client/index.html",
-    "dev": "yarn dev:server & yarn dev:client & micro-proxy -r local-proxy-rules.json -p 9000",
+    "dev:proxy": "micro-proxy -r local-proxy-rules.json -p 9000",
+    "dev": "run-p dev:*",
     "build": "parcel build src/client/index.html",
     "now-build": "yarn build",
     "lint": "eslint src --ext .js,.vue .",
@@ -32,6 +33,7 @@
     "micro-dev": "^3.0.0",
     "micro-proxy": "1.1.0",
     "now": "15.1.0",
+    "npm-run-all": "4.1.5",
     "parcel-bundler": "1.12.3",
     "puppeteer": "1.15.0",
     "vue-hot-reload-api": "2.3.3",
