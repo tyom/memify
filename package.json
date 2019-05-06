@@ -11,7 +11,7 @@
     "build": "parcel build src/client/index.html",
     "now-build": "yarn build",
     "lint": "eslint src --ext .js,.vue .",
-    "deploy": "now",
+    "deploy": "now `[ $NOW_TOKEN ] && echo -t $NOW_TOKEN`",
     "deploy:production": "yarn deploy --target production"
   },
   "dependencies": {
