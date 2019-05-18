@@ -89,7 +89,7 @@ export default {
   data() {
     return {
       presetUrl: this.$route.query.presetUrl || '',
-      examplePresetUrl: 'https://api.myjson.com/bins/1gqsgk',
+      examplePresetUrl: 'https://api.npoint.io/2f966781e0441822585d',
       presetExampleData: '',
       urlRules: [
         v => !!v || 'URL is required',
