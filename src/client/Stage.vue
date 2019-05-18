@@ -1,55 +1,16 @@
 <template>
-  <div>
-    <v-stage
-      ref="stage"
-      class="Composer"
-      :config="stageConfig"
-      @click="handleStageMouseDown"
-    >
-      <v-layer>
-        <CanvasImage
-          :src="preset.bgr.url"
-          :width="preset.bgr.width"
-          :height="preset.bgr.height"
-        />
-        <v-text
-          ref="textLayer"
-          :config="{
-            text: fontLoaded ? text : '',
-            draggable: true,
-            name: 'text',
-            ...preset.text,
-          }"
-        />
-        <CanvasImage
-          v-if="preset.fgr"
-          :src="preset.fgr.url"
-          :width="preset.fgr.width"
-          :height="preset.fgr.height"
-        />
-        <v-transformer ref="transformer" />
-      </v-layer>
-    </v-stage>
-  </div>
+  <div class="Stage" ref="stage"></div>
 </template>
 
 <script>
 import WebFont from 'webfontloader';
-import CanvasImage from './CanvasImage';
+import Konva from 'konva';
 
 export default {
-  components: {
-    CanvasImage,
-  },
   props: {
     preset: {
       type: Object,
-      default: () => ({
-        bgr: {
-          width: 600,
-          height: 450,
-        },
-      }),
+      required: true,
     },
     text: {
       type: String,
@@ -58,90 +19,153 @@ export default {
   },
   data() {
     return {
-      stageConfig: {},
-      textConfig: {},
-      selectedShapeName: '',
-      webFontLoaded: false,
+      stage: null,
+      layer: null,
+      caption: null,
     };
   },
   watch: {
     '$route.params.preset': {
-      immediate: true,
       handler() {
-        this.stageConfig.height = this.preset.bgr.height;
-        this.stageConfig.width = this.preset.bgr.width;
-        this.handleWebFont();
+        this.buildStage();
+      },
+    },
+    text: {
+      handler(value) {
+        this.updateCaption(value);
       },
     },
   },
-  computed: {
-    fontLoaded() {
-      return this.preset.webfont ? this.webFontLoaded : true;
-    }
-  },
   mounted() {
+    this.buildStage();
     window.addEventListener('click', evt => {
       if (evt.target.nodeName === 'CANVAS') {
         return;
       }
-      this.selectedShapeName = '';
-      this.updateTransformer();
+      this.clearTransformers();
     });
   },
   methods: {
-    handleWebFont() {
-      if (!this.preset.webfont) {
-        this.webFontLoaded = false;
+    async buildStage() {
+      const textConfig = {
+        ...this.preset.text,
+        fontSize:
+          this.preset.text.fontSize === 'auto'
+            ? this.preset.text.minFontSize || 12
+            : this.preset.text.fontSize,
+      };
+      this.stage = new Konva.Stage({
+        container: this.$refs.stage,
+        width: this.preset.bgr.width,
+        height: this.preset.bgr.height,
+      });
+      this.layer = new Konva.Layer();
+      this.caption = new Konva.Text({
+        ...textConfig,
+        name: 'textOverlay',
+        draggable: true,
+      });
+
+      await this.loadWebFont();
+
+      const bgrImage = await this.addImage({
+        ...this.preset.bgr,
+        name: 'backgroundImage',
+      });
+      const fgrImage = await this.addImage({
+        ...this.preset.fgr,
+        name: 'foregroundImage',
+        listening: false,
+      });
+
+      this.layer.add(bgrImage);
+      this.layer.add(this.caption);
+      fgrImage && this.layer.add(fgrImage);
+      this.stage.add(this.layer);
+
+      this.updateCaption(this.text);
+
+      this.layer.on('click tap', this.handleLayerClick);
+    },
+
+    async addImage({ url, width, height, name, listening } = {}) {
+      if (!url) {
         return;
       }
+      const imageEl = new window.Image(width, height);
+      imageEl.src = url;
 
-      WebFont.load({
-        ...this.preset.webfont,
-        active: () => {
-          this.webFontLoaded = true;
-          const text = this.$refs.textLayer.getNode();
-          text.text(this.text);
-          text.draw();
-        },
+      const image = new Konva.Image({
+        name,
+        listening,
+        image: imageEl,
+      });
+
+      return new Promise(resolve => {
+        imageEl.onload = () => resolve(image);
       });
     },
-    handleStageMouseDown(evt) {
-      // Clicked on stage - clear selection
-      if (!evt.target.draggable() || evt.target === evt.target.getStage()) {
-        this.selectedShapeName = '';
-        this.updateTransformer();
+
+    updateCaption(text) {
+      this.caption.text(text);
+
+      if (!text.length) {
+        this.layer.draw();
         return;
       }
 
-      const isTransformer = evt.target.getParent().className === 'Transformer';
-      if (isTransformer) {
-        return;
+      if (this.preset.text.fontSize === 'auto') {
+        const box = this.caption.getClientRect();
+        const textLines = this.caption.textArr;
+
+        if (textLines.length === 1) {
+          const { minFontSize = 12, maxFontSize = 60 } = this.preset.text;
+          let fontSize = box.width / (text.length * 0.8);
+          if (fontSize < minFontSize) {
+            fontSize = minFontSize;
+          }
+          if (fontSize > maxFontSize) {
+            fontSize = maxFontSize;
+          }
+          this.caption.fontSize(fontSize);
+        }
       }
 
-      this.selectedShapeName = evt.target.name();
-      this.updateTransformer();
+      this.layer.draw();
     },
-    updateTransformer() {
-      if (!this.$refs.transformer) {
+
+    clearTransformers() {
+      this.stage.find('Transformer').destroy();
+      this.layer.draw();
+    },
+
+    addTransformer(shape) {
+      const transformer = new Konva.Transformer();
+      this.layer.add(transformer);
+      transformer.attachTo(shape);
+      this.layer.draw();
+    },
+
+    handleLayerClick(evt) {
+      this.clearTransformers();
+
+      if (evt.target.name() === 'textOverlay') {
+        this.addTransformer(evt.target);
+      }
+    },
+
+    async loadWebFont() {
+      if (!this.preset.webfont) {
         return;
       }
-      const transformer = this.$refs.transformer.getStage();
-      const stage = transformer.getStage();
-      const selectedNode = stage.findOne(`.${this.selectedShapeName}`);
-
-      // transformer is already attached
-      if (selectedNode === transformer.node()) {
-        return;
-      }
-
-      // attach transformer to selected node
-      if (selectedNode) {
-        transformer.attachTo(selectedNode);
-      } else {
-        transformer.detach();
-      }
-
-      transformer.getLayer().batchDraw();
+      return new Promise(resolve => {
+        WebFont.load({
+          ...this.preset.webfont,
+          active: () => {
+            return resolve(this.preset.webfont);
+          },
+        });
+      });
     },
   },
 };

@@ -6325,11 +6325,6 @@ vue-hot-reload-api@2.3.3:
   resolved "https://registry.yarnpkg.com/vue-hot-reload-api/-/vue-hot-reload-api-2.3.3.tgz#2756f46cb3258054c5f4723de8ae7e87302a1ccf"
   integrity sha512-KmvZVtmM26BQOMK1rwUZsrqxEGeKiYSZGA7SNWE6uExx8UX/cj9hq2MRV/wWC3Cq6AoeDGk57rL9YMFRel/q+g==
 
-vue-konva@2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/vue-konva/-/vue-konva-2.0.4.tgz#3c750d6309c26af8cd4b2f0ad7e575da1fc396fc"
-  integrity sha512-YR1cqNnV3L8+OYoC2rcFoxo0q+BnM3u1b0qtLTi1tlbI9PyZRxEJeN6JOR2XpDocYM223iBsHcuYtZPLiLaPgA==
-
 vue-router@3.0.6:
   version "3.0.6"
   resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.0.6.tgz#2e4f0f9cbb0b96d0205ab2690cfe588935136ac3"

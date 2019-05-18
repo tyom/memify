@@ -14,7 +14,6 @@
             v-if="selectedPreset"
             :preset="selectedPreset"
             :text="$route.query.text"
-            ref="stage"
           />
           <PresetMenu
             v-else-if="!$route.params.preset"

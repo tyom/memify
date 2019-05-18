@@ -14,6 +14,9 @@
     "deploy": "now `[ $NOW_TOKEN ] && echo -t $NOW_TOKEN`",
     "deploy:production": "yarn deploy --target production"
   },
+  "browserslist": [
+    "since 2017-06"
+  ],
   "dependencies": {
     "atob": "2.1.2",
     "btoa": "1.2.1",
@@ -25,7 +28,6 @@
     "query-string": "6.4.2",
     "validator": "10.11.0",
     "vue": "2.6.10",
-    "vue-konva": "2.0.4",
     "vue-router": "3.0.6",
     "vuetify": "1.5.14",
     "webfontloader": "1.6.28"
