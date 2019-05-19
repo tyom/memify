@@ -3,8 +3,9 @@
 </template>
 
 <script>
-import WebFont from 'webfontloader';
 import Konva from 'konva';
+import { createStageComponents, populateLayer, createImage } from './konva';
+import { loadWebFont } from './utils';
 
 export default {
   props: {
@@ -31,8 +32,9 @@ export default {
   },
   watch: {
     '$route.params.preset': {
-      handler() {
-        this.syncPreset();
+      async handler() {
+        this.localPreset = this.getLocalPreset();
+        await this.buildStage();
       },
     },
     text: {
@@ -44,128 +46,106 @@ export default {
       deep: true,
       handler(preset) {
         this.$storage.set(this.presetKey, preset);
-      }
-    }
+      },
+    },
   },
-  mounted() {
-    this.syncPreset();
-    this.buildStage();
+  async mounted() {
+    this.localPreset = this.getLocalPreset();
+    await this.buildStage();
   },
   methods: {
     setUpEvents() {
       this.layer.on('click tap', this.handleLayerClick);
-      this.caption.on('transform', this.handleTextTransform);
+      this.caption.on('transform dragend', this.updateCaptionTransform);
 
       window.addEventListener('click', this.handleDocumentClick);
       window.addEventListener('resize', this.fitStageToScreen);
     },
 
+    async buildStage() {
+      const { stage, layer, caption } = await createStageComponents({
+        el: this.$el,
+        preset: this.localPreset,
+      });
+      this.stage = stage;
+      this.layer = layer;
+      this.caption = caption;
+
+      this.setUpEvents();
+      await loadWebFont(this.localPreset.webfont);
+
+      const compositionLayer = await this.buildLayer(this.localPreset);
+      this.stage.add(compositionLayer);
+
+      this.fitStageToScreen();
+      this.updateCaption(this.text);
+    },
+
+    async buildLayer(preset = {}) {
+      const bgrImage = await createImage({
+        ...preset.bgr,
+        name: 'backgroundImage',
+      });
+      const fgrImage = await createImage({
+        ...preset.fgr,
+        name: 'foregroundImage',
+        listening: false,
+      });
+
+      return populateLayer(this.layer, [
+        bgrImage,
+        this.caption,
+        fgrImage && this.layer.add(fgrImage),
+      ]);
+    },
+
     fitStageToScreen() {
       const parentContainer = this.$el.parentElement;
-      if (!parentContainer) {
+      const { width, height } = this.localPreset.bgr;
+      if (!parentContainer || !this.stage) {
         return;
       }
-      const stageWidth = this.localPreset.bgr.width;
-      const stageHeight = this.localPreset.bgr.height;
       const containerWidth = parentContainer.clientWidth;
-      const scale = containerWidth / stageWidth;
+      const scale = containerWidth / width;
 
-      if (containerWidth < stageWidth) {
-        this.stage.width(stageWidth * scale);
-        this.stage.height(stageHeight * scale);
-        this.stage.scale({ x: scale, y: scale });
+      if (containerWidth < width) {
+        this.stage.setAttrs({
+          width: width * scale,
+          height: height * scale,
+          scale: { x: scale, y: scale },
+        });
       }
 
       this.stage.draw();
     },
 
-    async buildStage() {
-      const textConfig = {
-        ...this.localPreset.text,
-        fontSize:
-          this.localPreset.text.fontSize === 'auto'
-            ? this.localPreset.text.minFontSize || 12
-            : this.localPreset.text.fontSize,
-      };
-      this.stage = new Konva.Stage({
-        container: this.$el,
-        width: this.localPreset.bgr.width,
-        height: this.localPreset.bgr.height,
-      });
-      this.layer = new Konva.Layer();
-      this.caption = new Konva.Text({
-        ...textConfig,
-        name: 'textOverlay',
-        draggable: true,
-      });
-
-      await this.loadWebFont();
-
-      const bgrImage = await this.addImage({
-        ...this.localPreset.bgr,
-        name: 'backgroundImage',
-      });
-      const fgrImage = await this.addImage({
-        ...this.localPreset.fgr,
-        name: 'foregroundImage',
-        listening: false,
-      });
-
-      this.layer.add(bgrImage);
-      this.layer.add(this.caption);
-      fgrImage && this.layer.add(fgrImage);
-      this.stage.add(this.layer);
-
-
-      this.updateCaption(this.text);
-      this.setUpEvents();
-      this.fitStageToScreen();
-    },
-
-    async addImage({ url, width, height, name, listening } = {}) {
-      if (!url) {
-        return;
-      }
-      const imageEl = new window.Image(width, height);
-      imageEl.src = url;
-
-      const image = new Konva.Image({
-        name,
-        listening,
-        image: imageEl,
-      });
-
-      return new Promise(resolve => {
-        imageEl.onload = () => resolve(image);
-      });
-    },
-
     updateCaption(text) {
       this.caption.text(text);
 
-      if (!text.length) {
-        this.layer.draw();
-        return;
-      }
-
       if (this.localPreset.text.fontSize === 'auto') {
-        const box = this.caption.getClientRect();
-        const textLines = this.caption.textArr;
-
-        if (textLines.length === 1) {
-          const { minFontSize = 12, maxFontSize = 60 } = this.localPreset.text;
-          let fontSize = box.width / (text.length * 0.8);
-          if (fontSize < minFontSize) {
-            fontSize = minFontSize;
-          }
-          if (fontSize > maxFontSize) {
-            fontSize = maxFontSize;
-          }
-          this.caption.fontSize(fontSize);
-        }
+        const fontSize = this.getAutoFontSize(text);
+        this.caption.fontSize(fontSize);
       }
 
       this.layer.draw();
+    },
+
+    getAutoFontSize(text) {
+      const box = this.caption.getClientRect();
+      const textLines = this.caption.textArr;
+
+      if (textLines.length !== 1) {
+        return;
+      }
+      const { minFontSize = 12, maxFontSize = 60 } = this.localPreset.text;
+      let fontSize = box.width / (text.length * 0.8);
+      if (fontSize < minFontSize) {
+        fontSize = minFontSize;
+      }
+      if (fontSize > maxFontSize) {
+        fontSize = maxFontSize;
+      }
+      return fontSize;
     },
 
     clearTransformers() {
@@ -180,30 +160,16 @@ export default {
       this.layer.draw();
     },
 
-    async loadWebFont() {
-      if (!this.localPreset.webfont) {
-        return;
-      }
-      return new Promise(resolve => {
-        WebFont.load({
-          ...this.localPreset.webfont,
-          active: () => {
-            return resolve(this.localPreset.webfont);
-          },
-        });
-      });
-    },
-
-    syncPreset() {
+    getLocalPreset() {
       const localPreset = this.$storage.get(this.presetKey);
-      this.localPreset = localPreset || this.preset;
+      return localPreset || this.preset;
     },
 
     handleLayerClick(evt) {
       this.clearTransformers();
 
       if (evt.target.name() === 'textOverlay') {
-        this.addTransformer(evt.target);
+        this.addTransformer(this.caption);
       }
     },
 
@@ -214,14 +180,20 @@ export default {
       this.clearTransformers();
     },
 
-    handleTextTransform(evt) {
-      const textNode = evt.currentTarget;
-      textNode.setAttrs({
-        width: textNode.width() * textNode.scaleX(),
+    updateCaptionTransform() {
+      this.caption.setAttrs({
+        width: this.caption.width() * this.caption.scaleX(),
         scaleX: 1,
       });
-      this.localPreset.text = textNode.attrs;
+      this.localPreset.text = this.caption.attrs;
     },
   },
 };
 </script>
+
+<style>
+.Stage {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  background-color: #222;
+}
+</style>
