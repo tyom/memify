@@ -31,7 +31,7 @@ export function populateLayer(layer, components = []) {
   if (!layer) {
     return;
   }
-  components.filter(Boolean).forEach(component => {
+  components.forEach(component => {
     layer.add(component);
   });
   return layer;

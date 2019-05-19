@@ -92,11 +92,13 @@ export default {
         listening: false,
       });
 
-      return populateLayer(this.layer, [
+      const layerComponents = [
         bgrImage,
         this.caption,
-        fgrImage && this.layer.add(fgrImage),
-      ]);
+        fgrImage,
+      ].filter(Boolean);
+
+      return populateLayer(this.layer, layerComponents);
     },
 
     fitStageToScreen() {
