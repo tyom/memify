@@ -1,5 +1,5 @@
 <template>
-  <div class="Stage" ref="stage"></div>
+  <div class="Stage"></div>
 </template>
 
 <script>
@@ -12,6 +12,10 @@ export default {
       type: Object,
       required: true,
     },
+    presetKey: {
+      type: String,
+      required: true,
+    },
     text: {
       type: String,
       default: '',
@@ -22,12 +26,13 @@ export default {
       stage: null,
       layer: null,
       caption: null,
+      localPreset: null,
     };
   },
   watch: {
     '$route.params.preset': {
       handler() {
-        this.buildStage();
+        this.syncPreset();
       },
     },
     text: {
@@ -35,29 +40,57 @@ export default {
         this.updateCaption(value);
       },
     },
+    localPreset: {
+      deep: true,
+      handler(preset) {
+        this.$storage.set(this.presetKey, preset);
+      }
+    }
   },
   mounted() {
+    this.syncPreset();
     this.buildStage();
-    window.addEventListener('click', evt => {
-      if (evt.target.nodeName === 'CANVAS') {
-        return;
-      }
-      this.clearTransformers();
-    });
   },
   methods: {
+    setUpEvents() {
+      this.layer.on('click tap', this.handleLayerClick);
+      this.caption.on('transform', this.handleTextTransform);
+
+      window.addEventListener('click', this.handleDocumentClick);
+      window.addEventListener('resize', this.fitStageToScreen);
+    },
+
+    fitStageToScreen() {
+      const parentContainer = this.$el.parentElement;
+      if (!parentContainer) {
+        return;
+      }
+      const stageWidth = this.localPreset.bgr.width;
+      const stageHeight = this.localPreset.bgr.height;
+      const containerWidth = parentContainer.clientWidth;
+      const scale = containerWidth / stageWidth;
+
+      if (containerWidth < stageWidth) {
+        this.stage.width(stageWidth * scale);
+        this.stage.height(stageHeight * scale);
+        this.stage.scale({ x: scale, y: scale });
+      }
+
+      this.stage.draw();
+    },
+
     async buildStage() {
       const textConfig = {
-        ...this.preset.text,
+        ...this.localPreset.text,
         fontSize:
-          this.preset.text.fontSize === 'auto'
-            ? this.preset.text.minFontSize || 12
-            : this.preset.text.fontSize,
+          this.localPreset.text.fontSize === 'auto'
+            ? this.localPreset.text.minFontSize || 12
+            : this.localPreset.text.fontSize,
       };
       this.stage = new Konva.Stage({
-        container: this.$refs.stage,
-        width: this.preset.bgr.width,
-        height: this.preset.bgr.height,
+        container: this.$el,
+        width: this.localPreset.bgr.width,
+        height: this.localPreset.bgr.height,
       });
       this.layer = new Konva.Layer();
       this.caption = new Konva.Text({
@@ -69,11 +102,11 @@ export default {
       await this.loadWebFont();
 
       const bgrImage = await this.addImage({
-        ...this.preset.bgr,
+        ...this.localPreset.bgr,
         name: 'backgroundImage',
       });
       const fgrImage = await this.addImage({
-        ...this.preset.fgr,
+        ...this.localPreset.fgr,
         name: 'foregroundImage',
         listening: false,
       });
@@ -83,9 +116,10 @@ export default {
       fgrImage && this.layer.add(fgrImage);
       this.stage.add(this.layer);
 
-      this.updateCaption(this.text);
 
-      this.layer.on('click tap', this.handleLayerClick);
+      this.updateCaption(this.text);
+      this.setUpEvents();
+      this.fitStageToScreen();
     },
 
     async addImage({ url, width, height, name, listening } = {}) {
@@ -114,12 +148,12 @@ export default {
         return;
       }
 
-      if (this.preset.text.fontSize === 'auto') {
+      if (this.localPreset.text.fontSize === 'auto') {
         const box = this.caption.getClientRect();
         const textLines = this.caption.textArr;
 
         if (textLines.length === 1) {
-          const { minFontSize = 12, maxFontSize = 60 } = this.preset.text;
+          const { minFontSize = 12, maxFontSize = 60 } = this.localPreset.text;
           let fontSize = box.width / (text.length * 0.8);
           if (fontSize < minFontSize) {
             fontSize = minFontSize;
@@ -141,9 +175,28 @@ export default {
 
     addTransformer(shape) {
       const transformer = new Konva.Transformer();
-      this.layer.add(transformer);
       transformer.attachTo(shape);
+      this.layer.add(transformer);
       this.layer.draw();
+    },
+
+    async loadWebFont() {
+      if (!this.localPreset.webfont) {
+        return;
+      }
+      return new Promise(resolve => {
+        WebFont.load({
+          ...this.localPreset.webfont,
+          active: () => {
+            return resolve(this.localPreset.webfont);
+          },
+        });
+      });
+    },
+
+    syncPreset() {
+      const localPreset = this.$storage.get(this.presetKey);
+      this.localPreset = localPreset || this.preset;
     },
 
     handleLayerClick(evt) {
@@ -154,18 +207,20 @@ export default {
       }
     },
 
-    async loadWebFont() {
-      if (!this.preset.webfont) {
+    handleDocumentClick(evt) {
+      if (evt.target.nodeName === 'CANVAS') {
         return;
       }
-      return new Promise(resolve => {
-        WebFont.load({
-          ...this.preset.webfont,
-          active: () => {
-            return resolve(this.preset.webfont);
-          },
-        });
+      this.clearTransformers();
+    },
+
+    handleTextTransform(evt) {
+      const textNode = evt.currentTarget;
+      textNode.setAttrs({
+        width: textNode.width() * textNode.scaleX(),
+        scaleX: 1,
       });
+      this.localPreset.text = textNode.attrs;
     },
   },
 };

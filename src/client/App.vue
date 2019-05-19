@@ -13,6 +13,7 @@
           <Stage
             v-if="selectedPreset"
             :preset="selectedPreset"
+            :preset-key="$route.params.preset"
             :text="$route.query.text"
           />
           <PresetMenu
@@ -58,8 +59,8 @@ export default {
       if (!this.preset) {
         return;
       }
-      const presetName = this.$route.params.preset;
-      return this.preset[presetName];
+      const presetKey = this.$route.params.preset;
+      return this.preset[presetKey];
     },
   },
   watch: {
