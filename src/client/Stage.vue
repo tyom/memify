@@ -136,7 +136,7 @@ export default {
       const box = this.caption.getClientRect();
       const textLines = this.caption.textArr;
 
-      if (textLines.length !== 1) {
+      if (textLines.length === 0) {
         return;
       }
       const { minFontSize = 12, maxFontSize = 60 } = this.localPreset.text;
