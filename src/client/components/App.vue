@@ -1,9 +1,9 @@
 <template>
   <v-app dark>
     <Toolbar
-      v-if="preset"
+      v-if="presets"
       :text="$route.query.text"
-      :preset="preset"
+      :presets="presets"
       @render="handleRender"
       @text-input="handleTextInput"
     />
@@ -12,14 +12,14 @@
         <template v-if="isValidPresetUrl">
           <Stage
             v-if="selectedPreset"
-            :preset="selectedPreset"
-            :preset-key="$route.params.preset"
-            :text="$route.query.text"
+            :preset.sync="selectedPreset"
+            :preset-key="presetKey"
+            :text="caption"
           />
           <PresetMenu
-            v-else-if="!$route.params.preset"
+            v-else-if="!presetKey"
             v-slot:default="{ on }"
-            :preset="preset"
+            :presets="presets"
           >
             <v-btn v-on="on">
               Select preset item
@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import { isValidUrl } from '../utils';
+import { isValidUrl } from '../../utils';
 import Toolbar from './Toolbar';
 import PresetMenu from './PresetMenu';
 import PresetSelection from './PresetSelection';
@@ -48,34 +48,44 @@ export default {
   },
   data() {
     return {
-      preset: null,
+      presets: this.$storage.get('presets'),
+      selectedPreset: null,
     };
   },
   computed: {
     isValidPresetUrl() {
       return isValidUrl(this.$route.query.presetUrl || '');
     },
-    selectedPreset() {
-      if (!this.preset) {
-        return;
-      }
-      const presetKey = this.$route.params.preset;
-      return this.preset[presetKey];
+    presetKey() {
+      return this.$route.params.preset;
+    },
+    caption() {
+      return this.$route.query.text;
     },
   },
   watch: {
-    '$route.query': {
+    $route: {
       immediate: true,
-      handler({ presetUrl }) {
-        if (!presetUrl) {
-          return;
+      async handler(route) {
+        const { presetUrl } = route.query;
+        const { preset } = route.params;
+        const localPresets = this.$storage.get('presets');
+        try {
+          this.presets =
+            localPresets && localPresets[preset]
+              ? (this.presets = localPresets)
+              : await fetch(presetUrl).then(res => res.json());
+          this.selectedPreset = this.presets[preset];
+        } catch (error) {
+          throw new Error('Failed to get preset data from the URL');
         }
-        fetch(presetUrl)
-          .then(res => res.json())
-          .then(data => {
-            this.preset = data;
-          });
       },
+    },
+    selectedPreset(preset) {
+      this.presets = { ...this.presets, [this.presetKey]: preset };
+    },
+    presets(presets) {
+      this.$storage.set('presets', presets);
     },
   },
   methods: {
@@ -101,5 +111,9 @@ export default {
 <style>
 html {
   background-color: #303030;
+}
+
+.v-toolbar .v-toolbar__content {
+  padding: 0 20px;
 }
 </style>

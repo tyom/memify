@@ -1,11 +1,11 @@
 <template>
   <v-toolbar app dense>
-    <PresetMenu v-slot:default="{ on }" :preset="preset">
+    <PresetMenu v-slot:default="{ on }" :presets="presets">
       <v-toolbar-side-icon v-on="on" />
     </PresetMenu>
     <v-form @submit.prevent="$emit('render')" grow>
       <v-layout>
-        <v-flex>
+        <v-flex px-2>
           <v-text-field
             :value="text"
             @input="$emit('text-input', $event)"
@@ -18,11 +18,33 @@
         </v-flex>
         <v-flex shrink>
           <v-btn type="submit" flat>
-            Render
+            <v-icon>photo_camera</v-icon>
           </v-btn>
         </v-flex>
       </v-layout>
     </v-form>
+    <v-dialog scrollable max-width="80vw">
+      <template v-slot:activator="{ on }">
+        <v-btn
+          v-on="on"
+          type="submit"
+          flat
+        >
+          <v-icon>save_alt</v-icon>
+        </v-btn>
+      </template>
+      <v-card>
+        <v-card-title>
+          <h2 class="headline">
+            Export preset as JSON
+          </h2>
+        </v-card-title>
+        <v-divider />
+        <v-card-text>
+          <pre>{{ JSON.stringify(presets, null, 2) }}</pre>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-toolbar>
 </template>
 
@@ -34,7 +56,7 @@ export default {
     PresetMenu,
   },
   props: {
-    preset: {
+    presets: {
       type: Object,
       default: () => ({}),
     },
@@ -42,6 +64,11 @@ export default {
       type: String,
       default: '',
     },
+  },
+  data() {
+    return {
+      dialog: false,
+    };
   },
   methods: {
     handlePresetToggle() {

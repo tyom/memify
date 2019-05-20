@@ -4,8 +4,9 @@
 
 <script>
 import Konva from 'konva';
-import { createStageComponents, populateLayer, createImage } from './konva';
-import { loadWebFont } from './utils';
+import { merge } from 'lodash';
+import { createStageComponents, populateLayer, createImage } from '../konva';
+import { loadWebFont } from '../utils';
 
 export default {
   props: {
@@ -27,31 +28,18 @@ export default {
       stage: null,
       layer: null,
       caption: null,
-      localPreset: null,
     };
   },
   watch: {
-    '$route.params.preset': {
-      async handler() {
-        this.localPreset = this.getLocalPreset();
-        await this.buildStage();
-      },
+    '$route.params.preset'() {
+      this.buildStage();
     },
-    text: {
-      handler(value) {
-        this.updateCaption(value);
-      },
-    },
-    localPreset: {
-      deep: true,
-      handler(preset) {
-        this.$storage.set(this.presetKey, preset);
-      },
+    text(caption) {
+      this.updateCaption(caption);
     },
   },
-  async mounted() {
-    this.localPreset = this.getLocalPreset();
-    await this.buildStage();
+  mounted() {
+    this.buildStage();
   },
   methods: {
     setUpEvents() {
@@ -65,16 +53,16 @@ export default {
     async buildStage() {
       const { stage, layer, caption } = await createStageComponents({
         el: this.$el,
-        preset: this.localPreset,
+        preset: this.preset,
       });
       this.stage = stage;
       this.layer = layer;
       this.caption = caption;
 
       this.setUpEvents();
-      await loadWebFont(this.localPreset.webfont);
+      await loadWebFont(this.preset.webfont);
 
-      const compositionLayer = await this.buildLayer(this.localPreset);
+      const compositionLayer = await this.buildLayer(this.preset);
       this.stage.add(compositionLayer);
 
       this.fitStageToScreen();
@@ -92,18 +80,16 @@ export default {
         listening: false,
       });
 
-      const layerComponents = [
-        bgrImage,
-        this.caption,
-        fgrImage,
-      ].filter(Boolean);
+      const layerComponents = [bgrImage, this.caption, fgrImage].filter(
+        Boolean
+      );
 
       return populateLayer(this.layer, layerComponents);
     },
 
     fitStageToScreen() {
       const parentContainer = this.$el.parentElement;
-      const { width, height } = this.localPreset.bgr;
+      const { width, height } = this.preset.bgr;
       if (!parentContainer || !this.stage) {
         return;
       }
@@ -124,7 +110,7 @@ export default {
     updateCaption(text) {
       this.caption.text(text);
 
-      if (this.localPreset.text.fontSize === 'auto') {
+      if (this.preset.text.fontSize === 'auto') {
         const fontSize = this.getAutoFontSize(text);
         this.caption.fontSize(fontSize);
       }
@@ -139,7 +125,7 @@ export default {
       if (textLines.length === 0) {
         return;
       }
-      const { minFontSize = 12, maxFontSize = 60 } = this.localPreset.text;
+      const { minFontSize = 12, maxFontSize = 60 } = this.preset.text;
       let fontSize = box.width / (text.length * 0.8);
       if (fontSize < minFontSize) {
         fontSize = minFontSize;
@@ -162,11 +148,6 @@ export default {
       this.layer.draw();
     },
 
-    getLocalPreset() {
-      const localPreset = this.$storage.get(this.presetKey);
-      return localPreset || this.preset;
-    },
-
     handleLayerClick(evt) {
       this.clearTransformers();
 
@@ -187,7 +168,12 @@ export default {
         width: this.caption.width() * this.caption.scaleX(),
         scaleX: 1,
       });
-      this.localPreset.text = this.caption.attrs;
+      this.$emit(
+        'update:preset',
+        merge({}, this.preset, {
+          text: this.caption.attrs,
+        })
+      );
     },
   },
 };

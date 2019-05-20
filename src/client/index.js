@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router'
 import Vuetify from 'vuetify';
 import {Vue2Storage} from 'vue2-storage';
-import App from './App.vue';
+import App from './components/App.vue';
 import 'vuetify/dist/vuetify.min.css';
 
 

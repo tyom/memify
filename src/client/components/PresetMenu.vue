@@ -6,7 +6,7 @@
     <v-list subheader>
       <v-subheader>Preset items</v-subheader>
       <v-list-tile
-        v-for="(item, key) in preset"
+        v-for="(item, key) in presets"
         :key="key"
         :to="{ name: 'preset', params: { preset: key }, query: $route.query }"
         avatar
@@ -25,7 +25,7 @@
 <script>
 export default {
   props: {
-    preset: {
+    presets: {
       type: Object,
       default: () => ({}),
     },
