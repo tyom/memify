@@ -167,7 +167,8 @@ export default {
     updateCaptionTransform() {
       this.caption.setAttrs({
         width: this.caption.width() * this.caption.scaleX(),
-        scaleX: 1,
+        height: this.caption.height() * this.caption.scaleY(),
+        scale: { x: 1, y: 1},
       });
       this.$emit(
         'update:preset',
