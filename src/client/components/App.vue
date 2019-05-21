@@ -17,15 +17,7 @@
             :preset-key="presetKey"
             :text="caption"
           />
-          <PresetMenu
-            v-else-if="!presetKey"
-            v-slot:default="{ on }"
-            :presets="presets"
-          >
-            <v-btn v-on="on">
-              Select preset item
-            </v-btn>
-          </PresetMenu>
+          <PresetGrid :cards="presets" v-else-if="!presetKey" />
         </template>
         <PresetSelection v-else />
       </v-layout>
@@ -37,18 +29,18 @@
 <script>
 import { isValidUrl } from '../../utils';
 import Toolbar from './Toolbar';
-import PresetMenu from './PresetMenu';
 import PresetSelection from './PresetSelection';
 import Stage from './Stage';
 import Drawer from './Drawer';
+import PresetGrid from './PresetGrid';
 
 export default {
   components: {
     Toolbar,
     Stage,
-    PresetMenu,
     PresetSelection,
     Drawer,
+    PresetGrid,
   },
   data() {
     return {
@@ -75,10 +67,13 @@ export default {
         const { presetUrl } = route.query;
         const { preset } = route.params;
         const localPresets = this.$storage.get('presets');
+        if (!presetUrl) {
+          return;
+        }
         try {
           this.presets =
             localPresets && localPresets[preset]
-              ? (this.presets = localPresets)
+              ? localPresets
               : await fetch(presetUrl).then(res => res.json());
           this.selectedPreset = this.presets[preset];
         } catch (error) {
@@ -87,6 +82,9 @@ export default {
       },
     },
     selectedPreset(preset) {
+      if (!this.presetKey) {
+        return;
+      }
       this.presets = { ...this.presets, [this.presetKey]: preset };
     },
     presets(presets) {

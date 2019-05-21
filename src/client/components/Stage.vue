@@ -17,6 +17,7 @@ export default {
     presetKey: {
       type: String,
       required: true,
+      default: '',
     },
     text: {
       type: String,
