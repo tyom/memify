@@ -4,6 +4,7 @@
       v-if="presets"
       :text="$route.query.text"
       :presets="presets"
+      @click-menu="handleMenuClick"
       @render="handleRender"
       @text-input="handleTextInput"
     />
@@ -28,6 +29,7 @@
         </template>
         <PresetSelection v-else />
       </v-layout>
+      <Drawer :show.sync="showDrawer" :presets="presets" />
     </v-container>
   </v-app>
 </template>
@@ -38,6 +40,7 @@ import Toolbar from './Toolbar';
 import PresetMenu from './PresetMenu';
 import PresetSelection from './PresetSelection';
 import Stage from './Stage';
+import Drawer from './Drawer';
 
 export default {
   components: {
@@ -45,9 +48,11 @@ export default {
     Stage,
     PresetMenu,
     PresetSelection,
+    Drawer,
   },
   data() {
     return {
+      showDrawer: null,
       presets: this.$storage.get('presets'),
       selectedPreset: null,
     };
@@ -103,6 +108,9 @@ export default {
       window.location.href = this.$router
         .resolve(this.$route)
         .href.replace('#', '/r');
+    },
+    handleMenuClick() {
+      this.showDrawer = !this.showDrawer;
     },
   },
 };
