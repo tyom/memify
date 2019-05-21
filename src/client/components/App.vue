@@ -1,27 +1,51 @@
 <template>
   <v-app dark>
-    <Toolbar
-      v-if="presets"
-      :text="$route.query.text"
-      :presets="presets"
-      @click-menu="handleMenuClick"
-      @render="handleRender"
-      @text-input="handleTextInput"
-    />
-    <v-container fluid fill-height>
-      <v-layout align-center justify-center>
-        <template v-if="isValidPresetUrl">
-          <Stage
-            v-if="selectedPreset"
-            :preset.sync="selectedPreset"
-            :preset-key="presetKey"
-            :text="caption"
-          />
-          <PresetGrid :cards="presets" v-else-if="!presetKey" />
-        </template>
-        <PresetSelection v-else />
+    <v-container
+      fluid
+      fill-height
+      pa-0
+    >
+      <v-layout align-center>
+        <v-flex
+          shrink
+          fill-height
+          v-if="presetSelected"
+        >
+          <Drawer :presets="presets" />
+        </v-flex>
+        <v-flex
+          d-flex
+          fill-height
+          v-if="presetSelected"
+        >
+          <v-layout column>
+            <v-flex shrink>
+              <Toolbar
+                :text="$route.query.text"
+                :presets="presets"
+                @render="handleRender"
+                @text-input="handleTextInput"
+              />
+            </v-flex>
+            <v-flex
+              d-flex
+              align-center
+              align-self-center
+            >
+              <Stage
+                v-if="selectedPreset"
+                :preset.sync="selectedPreset"
+                :preset-key="presetKey"
+                :text="caption"
+              />
+            </v-flex>
+          </v-layout>
+        </v-flex>
+        <v-flex v-else>
+          <PresetGrid v-if="isValidPresetUrl" :cards="presets" />
+          <PresetSelection v-else />
+        </v-flex>
       </v-layout>
-      <Drawer :show.sync="showDrawer" :presets="presets" />
     </v-container>
   </v-app>
 </template>
@@ -44,7 +68,6 @@ export default {
   },
   data() {
     return {
-      showDrawer: null,
       presets: this.$storage.get('presets'),
       selectedPreset: null,
     };
@@ -52,6 +75,9 @@ export default {
   computed: {
     isValidPresetUrl() {
       return isValidUrl(this.$route.query.presetUrl || '');
+    },
+    presetSelected() {
+      return this.isValidPresetUrl && this.presetKey;
     },
     presetKey() {
       return this.$route.params.preset;
@@ -106,9 +132,6 @@ export default {
       window.location.href = this.$router
         .resolve(this.$route)
         .href.replace('#', '/r');
-    },
-    handleMenuClick() {
-      this.showDrawer = !this.showDrawer;
     },
   },
 };

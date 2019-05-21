@@ -1,6 +1,5 @@
 <template>
-  <v-toolbar app dense>
-    <v-toolbar-side-icon @click="$emit('click-menu')" />
+  <v-toolbar dense flat>
     <v-form @submit.prevent="$emit('render')">
       <v-layout>
         <v-flex px-2>

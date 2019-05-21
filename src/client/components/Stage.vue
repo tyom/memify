@@ -183,7 +183,7 @@ export default {
 
 <style>
 .Stage {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 2px 10px rgba(0, 0, 0, 0.3);
   background-color: #222;
 }
 </style>

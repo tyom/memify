@@ -1,10 +1,9 @@
 <template>
-  <v-container grid-list-md>
+  <v-container grid-list-md fluid>
     <v-layout row wrap>
       <v-flex
         v-for="(card, key) in cards"
         :key="card.key"
-        offset-sm3
         sm6
         xs12
       >
