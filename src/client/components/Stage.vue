@@ -9,21 +9,6 @@ import { createStageComponents, populateLayer, createImage } from '../konva';
 import { loadWebFont } from '../utils';
 
 export default {
-  props: {
-    preset: {
-      type: Object,
-      required: true,
-    },
-    presetKey: {
-      type: String,
-      required: true,
-      default: '',
-    },
-    text: {
-      type: String,
-      default: '',
-    },
-  },
   data() {
     return {
       stage: null,
@@ -32,11 +17,28 @@ export default {
     };
   },
   watch: {
-    '$route.params.preset'() {
+    presetKey() {
       this.buildStage();
+    },
+    async preset(preset, prevPreset) {
+      if (preset.text.fontFamily !== prevPreset.text.fontFamily) {
+        await loadWebFont(preset.webfont);
+      }
+      this.updateCaption();
     },
     text(caption) {
       this.updateCaption(caption);
+    },
+  },
+  computed: {
+    preset() {
+      return this.$store.state.selectedPreset.content;
+    },
+    presetKey() {
+      return this.$store.state.selectedPreset.key;
+    },
+    text() {
+      return this.$route.query.text;
     },
   },
   mounted() {
@@ -108,13 +110,16 @@ export default {
       this.stage.draw();
     },
 
-    updateCaption(text) {
+    updateCaption(text = this.text) {
       this.caption.text(text);
 
-      if (this.preset.text.fontSize === 'auto') {
-        const fontSize = this.getAutoFontSize(text);
-        this.caption.fontSize(fontSize);
-      }
+      const fontSize =
+        this.preset.text.fontSize === 'auto'
+          ? this.getAutoFontSize(text)
+          : this.preset.text.fontSize;
+
+      this.caption.fontSize(fontSize);
+      this.caption.fontFamily(this.preset.text.fontFamily);
 
       this.layer.draw();
     },
@@ -168,14 +173,15 @@ export default {
       this.caption.setAttrs({
         width: this.caption.width() * this.caption.scaleX(),
         height: this.caption.height() * this.caption.scaleY(),
-        scale: { x: 1, y: 1},
+        scale: { x: 1, y: 1 },
       });
-      this.$emit(
-        'update:preset',
-        merge({}, this.preset, {
+
+      return this.$store.dispatch('UPDATE_PRESET', {
+        key: this.presetKey,
+        content: merge({}, this.preset, {
           text: this.caption.attrs,
-        })
-      );
+        }),
+      });
     },
   },
 };

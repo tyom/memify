@@ -1,6 +1,9 @@
 import Konva from 'konva';
 
 export async function createStageComponents({ el, preset }) {
+  if (!preset) {
+    throw new Error('No preset in `createStageComponents`');
+  }
   const textConfig = {
     ...preset.text,
     fontSize:

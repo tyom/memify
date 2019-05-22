@@ -7,42 +7,30 @@
     >
       <v-layout align-center>
         <v-flex
+          v-if="hasValidPreset"
           shrink
           fill-height
-          v-if="presetSelected"
         >
-          <Drawer :presets="presets" />
+          <Drawer :presets="localPresets" />
         </v-flex>
         <v-flex
+          v-if="hasValidPreset"
           d-flex
           fill-height
-          v-if="presetSelected"
         >
           <v-layout column>
-            <v-flex shrink>
-              <Toolbar
-                :text="$route.query.text"
-                :presets="presets"
-                @render="handleRender"
-                @text-input="handleTextInput"
-              />
-            </v-flex>
+            <Toolbar @render="handleRender" />
             <v-flex
               d-flex
               align-center
               align-self-center
             >
-              <Stage
-                v-if="selectedPreset"
-                :preset.sync="selectedPreset"
-                :preset-key="presetKey"
-                :text="caption"
-              />
+              <Stage v-if="selectedPreset" />
             </v-flex>
           </v-layout>
         </v-flex>
         <v-flex v-else>
-          <PresetGrid v-if="isValidPresetUrl" :cards="presets" />
+          <PresetGrid v-if="isValidPresetUrl" :cards="localPresets" />
           <PresetSelection v-else />
         </v-flex>
       </v-layout>
@@ -66,68 +54,47 @@ export default {
     Drawer,
     PresetGrid,
   },
-  data() {
-    return {
-      presets: this.$storage.get('presets'),
-      selectedPreset: null,
-    };
-  },
   computed: {
     isValidPresetUrl() {
       return isValidUrl(this.$route.query.presetUrl || '');
     },
-    presetSelected() {
+    hasValidPreset() {
       return this.isValidPresetUrl && this.presetKey;
     },
     presetKey() {
       return this.$route.params.preset;
     },
-    caption() {
-      return this.$route.query.text;
+    presetUrl() {
+      return this.$route.query.presetUrl;
+    },
+    selectedPreset() {
+      return (
+        this.$store.state.selectedPreset &&
+        this.$store.state.selectedPreset.content
+      );
+    },
+    localPresets() {
+      return this.$store.state.presets;
     },
   },
   watch: {
     $route: {
       immediate: true,
-      async handler(route) {
-        const { presetUrl } = route.query;
-        const { preset } = route.params;
-        const localPresets = this.$storage.get('presets');
-        if (!presetUrl) {
-          return;
+      async handler() {
+        if (this.isValidPresetUrl && !this.localPresets) {
+          await this.$store.dispatch('FETCH_PRESETS', this.presetUrl);
         }
-        try {
-          this.presets =
-            localPresets && localPresets[preset]
-              ? localPresets
-              : await fetch(presetUrl).then(res => res.json());
-          this.selectedPreset = this.presets[preset];
-        } catch (error) {
-          throw new Error('Failed to get preset data from the URL');
+        if (
+          !this.selectedPreset ||
+          this.selectedPreset.key !== this.presetKey
+        ) {
+          return this.$store.dispatch('SELECT_PRESET', this.presetKey);
         }
       },
     },
-    selectedPreset(preset) {
-      if (!this.presetKey) {
-        return;
-      }
-      this.presets = { ...this.presets, [this.presetKey]: preset };
-    },
-    presets(presets) {
-      this.$storage.set('presets', presets);
-    },
   },
+  mounted() {},
   methods: {
-    handleTextInput(value) {
-      this.$router.replace({
-        name: 'preset',
-        params: { preset: this.$route.params.preset },
-        query: {
-          ...this.$route.query,
-          text: value,
-        },
-      });
-    },
     handleRender() {
       window.location.href = this.$router
         .resolve(this.$route)
