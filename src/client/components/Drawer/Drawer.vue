@@ -59,17 +59,17 @@ export default {
     Actions,
     PresetItems,
   },
-  props: {
-    presets: {
-      type: Object,
-      default: null,
-    },
-  },
   data() {
     return {
       mini: true,
       exportDialog: false,
+      localPresets: {},
     };
+  },
+  computed: {
+    presets() {
+      return this.$store.state.presets || {};
+    },
   },
   methods: {
     handleExport() {
