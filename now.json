@@ -2,6 +2,11 @@
   "version": 2,
   "name": "memify",
   "alias": "memify.tyom.dev",
+  "build": {
+    "env": {
+      "VUE_APP_GOOGLE_API_KEY": "@google-api-key"
+    }
+  },
   "builds": [
     { "src": "package.json", "use": "@now/static-build" },
     { "src": "public/*", "use": "@now/static" },
