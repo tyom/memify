@@ -2,11 +2,11 @@
   <v-list class="presets pt-0">
     <v-list-tile
       avatar
-      v-for="item in presetItems"
-      :key="item.title"
+      v-for="meme in memes"
+      :key="meme.title"
       :to="{
-        name: 'preset',
-        params: { preset: item.key },
+        name: 'preset-meme',
+        params: { presetId: presetId, memeId: meme.id },
         query: $route.query,
       }"
     >
@@ -17,13 +17,13 @@
             tile
             size="55"
           >
-            <v-img :src="item.thumbUrl" />
+            <v-img :src="meme.image.src" />
           </v-list-tile-avatar>
         </template>
-        <span>{{ item.title }}</span>
+        <span>{{ meme.title }}</span>
       </v-tooltip>
       <v-list-tile-content>
-        <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+        <v-list-tile-title>{{ meme.title }}</v-list-tile-title>
       </v-list-tile-content>
     </v-list-tile>
   </v-list>
@@ -32,9 +32,9 @@
 <script>
 export default {
   props: {
-    presets: {
-      type: Object,
-      default: () => ({}),
+    memes: {
+      type: Array,
+      default: () => [],
     },
     mini: {
       type: Boolean,
@@ -42,12 +42,8 @@ export default {
     },
   },
   computed: {
-    presetItems() {
-      return Object.entries(this.presets).map(([key, content]) => ({
-        key,
-        title: content.name,
-        thumbUrl: content.bgr.url,
-      }));
+    presetId() {
+      return this.$route.params.presetId;
     },
   },
 };

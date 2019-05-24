@@ -22,59 +22,30 @@
         </v-list-tile>
       </v-list>
 
-      <PresetItems :presets="presets" :mini="mini" />
-
-      <Actions
-        @export="handleExport"
-        :expanded="!mini"
-        class="mt-auto"
-      />
+      <PresetItems :memes="preset.memes" :mini="mini" />
     </v-layout>
-    <v-dialog
-      v-model="exportDialog"
-      scrollable
-      max-width="80vw"
-    >
-      <v-card>
-        <v-card-title>
-          <h2 class="headline">
-            Export preset as JSON
-          </h2>
-        </v-card-title>
-        <v-divider />
-        <v-card-text>
-          <pre>{{ JSON.stringify(presets, null, 2) }}</pre>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
   </v-navigation-drawer>
 </template>
 
 <script>
-import Actions from './Actions';
 import PresetItems from './PresetItems';
 
 export default {
   components: {
-    Actions,
     PresetItems,
+  },
+  props: {
+    preset: {
+      type: Object,
+      default: () => ({
+        memes: [],
+      }),
+    }
   },
   data() {
     return {
       mini: true,
-      exportDialog: false,
-      localPresets: {},
     };
-  },
-  computed: {
-    presets() {
-      return this.$store.state.presets || {};
-    },
-  },
-  methods: {
-    handleExport() {
-      this.exportDialog = true;
-    },
   },
 };
 </script>

@@ -4,11 +4,21 @@
 
 <script>
 import Konva from 'konva';
-import { merge } from 'lodash';
-import { createStageComponents, populateLayer, createImage } from '../konva';
-import { loadWebFont } from '../utils';
+import { isEqual, debounce } from 'lodash';
+import { createStageComponents, populateLayer, createImage } from '../../konva';
+import { loadWebFont } from '../../utils';
 
 export default {
+  props: {
+    meme: {
+      type: Object,
+      default: () => ({}),
+    },
+    captionText: {
+      type: String,
+      default: '',
+    },
+  },
   data() {
     return {
       stage: null,
@@ -17,82 +27,73 @@ export default {
     };
   },
   watch: {
-    presetKey() {
-      this.buildStage();
-    },
-    async preset(preset, prevPreset) {
-      if (preset.text.fontFamily !== prevPreset.text.fontFamily) {
-        await loadWebFont(preset.webfont);
+    meme(meme, prevMeme) {
+      if (!isEqual(meme.webfont, prevMeme.webfont) || meme.id !== prevMeme.id) {
+        return this.buildStage();
       }
-      this.updateCaption();
-    },
-    text(caption) {
-      this.updateCaption(caption);
-    },
-  },
-  computed: {
-    preset() {
-      return this.$store.state.selectedPreset.content;
-    },
-    presetKey() {
-      return this.$store.state.selectedPreset.key;
-    },
-    text() {
-      return this.$route.query.text;
+      this.updateCaption(this.meme.caption);
     },
   },
   mounted() {
     this.buildStage();
   },
   methods: {
-    setUpEvents() {
-      this.layer.on('click tap', this.handleLayerClick);
-      this.caption.on('transform dragend', this.updateCaptionTransform);
-
-      window.addEventListener('click', this.handleDocumentClick);
-      window.addEventListener('resize', this.fitStageToScreen);
-    },
-
     async buildStage() {
+      if (!this.meme.id) {
+        return;
+      }
       const { stage, layer, caption } = await createStageComponents({
         el: this.$el,
-        preset: this.preset,
+        meme: this.meme,
       });
       this.stage = stage;
       this.layer = layer;
       this.caption = caption;
 
+      await loadWebFont(this.meme.webfont);
+
+      const composedLayer = await this.buildLayer(this.meme);
+      this.stage.add(composedLayer);
+
       this.setUpEvents();
-      await loadWebFont(this.preset.webfont);
-
-      const compositionLayer = await this.buildLayer(this.preset);
-      this.stage.add(compositionLayer);
-
       this.fitStageToScreen();
-      this.updateCaption(this.text);
+      this.updateCaption({
+        ...this.meme.caption,
+        text: this.captionText,
+      });
     },
 
-    async buildLayer(preset = {}) {
-      const bgrImage = await createImage({
-        ...preset.bgr,
-        name: 'backgroundImage',
+    async buildLayer(meme = {}) {
+      const image = await createImage({
+        ...meme.image,
+        name: 'image',
       });
-      const fgrImage = await createImage({
-        ...preset.fgr,
-        name: 'foregroundImage',
+
+      const overlayImage = await createImage({
+        ...(meme.overlayImage || {} ),
+        name: 'overlay',
         listening: false,
       });
 
-      const layerComponents = [bgrImage, this.caption, fgrImage].filter(
+      const layerComponents = [image, this.caption, overlayImage].filter(
         Boolean
       );
 
       return populateLayer(this.layer, layerComponents);
     },
 
+    setUpEvents() {
+      this.layer.on('click tap', this.handleLayerClick);
+      this.caption.on('transform dragend', this.updateCaptionTransform);
+      this.caption.on('transform dragend', debounce(this.emitUpdate, 500));
+
+      window.addEventListener('click', this.handleDocumentClick);
+      window.addEventListener('resize', this.fitStageToScreen);
+    },
+
     fitStageToScreen() {
       const parentContainer = this.$el.parentElement;
-      const { width, height } = this.preset.bgr;
+      const { width, height } = this.meme.image;
       if (!parentContainer || !this.stage) {
         return;
       }
@@ -110,18 +111,20 @@ export default {
       this.stage.draw();
     },
 
-    updateCaption(text = this.text) {
+    updateCaption({ text, fontSize, fontFamily } = {}) {
       this.caption.text(text);
 
-      const fontSize =
-        this.preset.text.fontSize === 'auto'
-          ? this.getAutoFontSize(text)
-          : this.preset.text.fontSize;
+      const captionFontSize =
+        fontSize === 'auto' ? this.getAutoFontSize(text) : fontSize;
 
-      this.caption.fontSize(fontSize);
-      this.caption.fontFamily(this.preset.text.fontFamily);
+      this.caption.fontSize(captionFontSize);
+      this.caption.fontFamily(fontFamily);
 
       this.layer.draw();
+    },
+
+    emitUpdate() {
+      this.$emit('update-caption', this.caption.attrs);
     },
 
     getAutoFontSize(text) {
@@ -174,13 +177,6 @@ export default {
         width: this.caption.width() * this.caption.scaleX(),
         height: this.caption.height() * this.caption.scaleY(),
         scale: { x: 1, y: 1 },
-      });
-
-      return this.$store.dispatch('UPDATE_PRESET', {
-        key: this.presetKey,
-        content: merge({}, this.preset, {
-          text: this.caption.attrs,
-        }),
       });
     },
   },

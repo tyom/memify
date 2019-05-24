@@ -1,22 +1,23 @@
 import Konva from 'konva';
 
-export async function createStageComponents({ el, preset }) {
-  if (!preset) {
+export async function createStageComponents({ el, meme }) {
+  if (!meme) {
     throw new Error('No preset in `createStageComponents`');
   }
+  const { caption } = meme;
   const textConfig = {
-    ...preset.text,
+    ...caption,
     fontSize:
-      preset.text.fontSize === 'auto'
-        ? preset.text.minFontSize || 12
-        : preset.text.fontSize,
+      caption.fontSize === 'auto'
+        ? caption.minFontSize || 12
+        : caption.fontSize,
   };
 
   return {
     stage: new Konva.Stage({
       container: el,
-      width: preset.bgr.width,
-      height: preset.bgr.height,
+      width: meme.image.width,
+      height: meme.image.height,
     }),
 
     layer: new Konva.Layer(),
@@ -41,17 +42,17 @@ export function populateLayer(layer, components = []) {
 }
 
 export async function createImage({
-  url,
+  src,
   width,
   height,
   name,
   listening,
 } = {}) {
-  if (!url) {
+  if (!src) {
     return;
   }
   const imageEl = new window.Image(width, height);
-  imageEl.src = url;
+  imageEl.src = src;
 
   const image = new Konva.Image({
     name,

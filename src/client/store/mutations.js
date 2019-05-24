@@ -1,14 +1,6 @@
 export default {
-  setPresets(state, presets) {
-    state.presets = presets;
-  },
-
-  setSelectedPreset(state, preset) {
-    state.selectedPreset = preset;
-    state.presets = {
-      ...state.presets,
-      [preset.key]: preset.content,
-    }
+  setPreset(state, preset) {
+    state.preset = preset;
   },
 
   setFontFamilies(state, fontFamilies) {

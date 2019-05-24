@@ -2,10 +2,10 @@ import Vuex from 'vuex';
 import createPersistedState from 'vuex-persistedstate';
 import actions from './actions';
 import mutations from './mutations';
+import getters from './getters';
 
 export const state = {
-  presets: undefined,
-  selectedPreset: undefined,
+  preset: undefined,
   fontFamilies: [],
 };
 
@@ -14,6 +14,7 @@ export default function(storeName) {
     state,
     actions,
     mutations,
+    getters,
     plugins: [
       createPersistedState({
         key: storeName,

@@ -7,7 +7,7 @@
         editable
         hide-details
         label="Font family"
-        @change="$store.dispatch('UPDATE_FONT_FAMILY', $event)"
+        @change="$emit('update', { fontFamily: $event })"
       />
       <v-overflow-btn
         v-model="selectedFontSize"
@@ -15,18 +15,18 @@
         class="font-sizes"
         hide-details
         label="Font size"
-        @change="$store.dispatch('UPDATE_TEXT_OPTIONS', { fontSize: $event })"
+        @change="$emit('update', { fontSize: $event })"
       />
     </v-flex>
     <v-flex pa-2>
       <v-text-field
-        :value="caption"
+        :value="captionText"
         autofocus
         flat
         solo-inverted
         hide-details
         label="Caption"
-        @input="$store.dispatch('UPDATE_CAPTION', $event)"
+        @input="$emit('update', { text: $event })"
       />
     </v-flex>
   </v-flex>
@@ -36,14 +36,18 @@
 export default {
   props: {
     caption: {
+      type: Object,
+      default: () => ({}),
+    },
+    captionText: {
       type: String,
       default: '',
     },
   },
   data() {
     return {
-      selectedFontSize: null,
-      selectedFontFamily: null,
+      selectedFontSize: this.caption.fontSize,
+      selectedFontFamily: this.caption.fontFamily,
       fontFamilies: [],
       fontSizes: [
         { text: 'auto', value: 'auto' },
@@ -55,18 +59,6 @@ export default {
         { text: '15', value: 15 },
       ],
     };
-  },
-  watch: {
-    '$store.state.selectedPreset': {
-      immediate: true,
-      handler(preset) {
-        if (!preset) {
-          return;
-        }
-        this.selectedFontSize = preset.content.text.fontSize;
-        this.selectedFontFamily = preset.content.text.fontFamily;
-      },
-    },
   },
   mounted() {
     return this.$store.dispatch('GET_GOOGLE_FONTS');

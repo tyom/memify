@@ -1,80 +1,87 @@
 import to from 'await-to-js';
+import db from './firestore';
 import router from '../router';
 
 const GOOGLE_API_KEY = process.env.VUE_APP_GOOGLE_API_KEY;
 
+async function getPresetMemesFromCloud(presetDoc) {
+  const { memes } = presetDoc.data();
+  const refPromises = memes.map(id => db.doc(`memes/${id}`).get());
+  const presetMemeDocs = await Promise.all(refPromises);
+  return presetMemeDocs.map(d => ({
+    ...d.data(),
+    id: d.id,
+  }));
+}
+
 export default {
-  async FETCH_PRESETS({ commit }, presetsUrl) {
-    const presetRequest = fetch(presetsUrl).then(res => res.json());
-    const [err, storedPreset] = await to(presetRequest);
-    if (err) {
-      throw new Error(`Error getting preset from URL ${presetsUrl}`);
+  async INIT_APP({ state, dispatch }) {
+    if (!state.fontFamilies) {
+      dispatch('GET_GOOGLE_FONTS');
     }
-    commit('setPresets', storedPreset);
   },
 
-  SELECT_PRESET({ commit, state }, presetKey) {
-    if (!state.presets || !presetKey) {
+  async INIT_PRESET({ commit, state }, presetId) {
+    if (state.preset) {
       return;
     }
-    commit('setSelectedPreset', {
-      key: presetKey,
-      content: state.presets[presetKey],
+
+    const cloudPresetDoc = await db
+      .collection('presets')
+      .doc(presetId)
+      .get();
+
+    if (!cloudPresetDoc.exists) {
+      throw new Error(`Couldn't find preset: ${presetId}`);
+    }
+
+    const memes = await getPresetMemesFromCloud(cloudPresetDoc);
+    commit('setPreset', {
+      id: presetId,
+      memes,
     });
   },
 
-  UPDATE_PRESET({ commit, state }, preset) {
-    commit('setSelectedPreset', preset);
-    commit('setPresets', {
-      ...state.presets,
-      [preset.key]: preset.content,
-    });
+  RENDER() {
+    const currentHref = router.resolve(router.currentRoute).href;
+    window.location.href = currentHref.replace('#', '/r');
   },
 
-  UPDATE_CAPTION(context, caption) {
-    const { params, query } = router.currentRoute;
-
-    router.replace({
-      name: 'preset',
-      params: { preset: params.preset },
-      query: {
-        ...query,
-        text: caption,
-      },
-    });
-  },
-
-  UPDATE_TEXT_OPTIONS({ commit, state }, textOptions) {
-    commit('setSelectedPreset', {
-      ...state.selectedPreset,
-      content: {
-        ...state.selectedPreset.content,
-        text: {
-          ...state.selectedPreset.content.text,
-          ...textOptions,
-        },
-      },
-    });
-  },
-
-  UPDATE_FONT_FAMILY({ dispatch, state }, fontFamily) {
-    const preset = state.selectedPreset.content;
-    const key = state.selectedPreset.key;
-    const updatedPreset = {
-      ...preset,
-      text: {
-        ...preset.text,
-        fontFamily,
-      },
-      webfont: {
-        ...preset.webfont,
-        google: {
-          ...preset.webfont.google,
-          families: [fontFamily],
-        },
+  SAVE_TO_CLOUD(context, meme) {
+    const updatedMeme = {
+      ...meme,
+      caption: {
+        ...meme.caption,
+        text: '',
       },
     };
-    dispatch('UPDATE_PRESET', { key, content: updatedPreset });
+    db.collection('memes')
+      .doc(meme.id)
+      .set(updatedMeme);
+  },
+
+  UPDATE_MEME({ commit, state }, newMeme) {
+    if (!state.preset) {
+      return;
+    }
+    const { params, query } = router.currentRoute;
+    const updatedMemes = state.preset.memes.map(meme =>
+      meme.id === newMeme.id ? newMeme : meme
+    );
+
+    router.replace({
+      name: 'preset-meme',
+      params,
+      query: {
+        ...query,
+        text: newMeme.caption.text,
+      },
+    });
+
+    commit('setPreset', {
+      ...state.preset,
+      memes: updatedMemes,
+    });
   },
 
   async GET_GOOGLE_FONTS({ commit }) {
