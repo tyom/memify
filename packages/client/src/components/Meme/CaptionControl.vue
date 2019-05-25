@@ -2,31 +2,31 @@
   <v-flex d-flex>
     <v-flex d-flex sm6>
       <v-overflow-btn
-        v-model="selectedFontFamily"
         :items="$store.state.fontFamilies"
+        :value="caption.fontFamily"
         editable
         hide-details
         label="Font family"
-        @change="$emit('update', { fontFamily: $event })"
+        @change="$emit('update:caption', { ...caption, fontFamily: $event })"
       />
       <v-overflow-btn
-        v-model="selectedFontSize"
         :items="fontSizes"
+        :value="caption.fontSize"
         class="font-sizes"
         hide-details
         label="Font size"
-        @change="$emit('update', { fontSize: $event })"
+        @change="$emit('update:caption', { ...caption, fontSize: $event })"
       />
     </v-flex>
     <v-flex pa-2>
       <v-text-field
-        :value="captionText"
+        :value="caption.text"
         autofocus
         flat
         solo-inverted
         hide-details
         label="Caption"
-        @input="$emit('update', { text: $event })"
+        @input="$emit('update:caption', { ...caption, text: $event })"
       />
     </v-flex>
   </v-flex>
@@ -38,10 +38,6 @@ export default {
     caption: {
       type: Object,
       default: () => ({}),
-    },
-    captionText: {
-      type: String,
-      default: '',
     },
   },
   data() {

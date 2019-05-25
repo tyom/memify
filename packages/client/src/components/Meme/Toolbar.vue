@@ -4,8 +4,7 @@
     <template v-slot:extension>
       <CaptionControl
         :caption="meme.caption"
-        :caption-text="captionText"
-        @update="$emit('update-caption', $event)"
+        @update:caption="$emit('update:caption', $event)"
       />
     </template>
 
@@ -55,10 +54,6 @@ export default {
       type: Boolean,
       default: false,
     },
-    captionText: {
-      type: String,
-      default: '',
-    }
   },
 };
 </script>

@@ -14,10 +14,6 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    captionText: {
-      type: String,
-      default: '',
-    },
   },
   data() {
     return {
@@ -59,7 +55,6 @@ export default {
       this.fitStageToScreen();
       this.updateCaption({
         ...this.meme.caption,
-        text: this.captionText,
       });
     },
 
@@ -124,7 +119,7 @@ export default {
     },
 
     emitUpdate() {
-      this.$emit('update-caption', this.caption.attrs);
+      this.$emit('update:caption', this.caption.attrs);
     },
 
     getAutoFontSize(text) {

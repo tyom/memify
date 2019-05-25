@@ -5,21 +5,16 @@
         <Toolbar
           :meme="meme"
           :has-changed="hasChanged"
-          :caption-text="captionText"
           @render="$store.dispatch('RENDER', meme)"
           @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
-          @update-caption="handleUpdateCaption"
+          @update:caption="handleUpdateCaption"
         />
         <v-flex
           d-flex
           align-center
           align-self-center
         >
-          <Stage
-            :meme="meme"
-            :caption-text="captionText"
-            @update-caption="handleUpdateCaption"
-          />
+          <Stage :meme="meme" @update:caption="handleUpdateCaption" />
         </v-flex>
       </v-layout>
     </v-flex>
@@ -46,14 +41,22 @@ export default {
     memeId() {
       return this.$route.params.memeId;
     },
+    captionText() {
+      return this.$route.query.text;
+    },
     meme() {
       if (!this.$store.state.preset) {
         return;
       }
-      return this.$store.state.preset.memes.find(m => m.id === this.memeId);
-    },
-    captionText() {
-      return this.$route.query.text;
+      const localMeme =
+        this.$store.state.preset.memes.find(m => m.id === this.memeId) || {};
+      return {
+        ...localMeme,
+        caption: {
+          ...localMeme.caption,
+          text: this.captionText,
+        },
+      };
     },
     hasChanged() {
       return this.cloudMeme && !isEqual(this.cloudMeme, this.meme);
@@ -72,7 +75,6 @@ export default {
         caption: {
           ...this.meme.caption,
           ...captionAttrs,
-          text: this.captionText,
         },
       };
 
