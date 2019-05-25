@@ -1,8 +1,8 @@
 {
-  "name": "@memify/lib",
+  "name": "@memify/shared",
   "version": "0.1.0",
   "license": "MIT",
   "dependencies": {
-    "validator": "10.11.0"
+    "firebase": "6.0.4"
   }
 }

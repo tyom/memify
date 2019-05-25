@@ -8,7 +8,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@memify/lib": "*",
+    "@memify/shared": "*",
     "atob": "2.1.2",
     "await-to-js": "2.1.1",
     "btoa": "1.2.1",

@@ -1,7 +1,7 @@
 <template>
   <v-layout align-center>
     <v-flex d-flex fill-height>
-      <v-layout column>
+      <v-layout column v-if="meme">
         <Toolbar
           :meme="meme"
           :has-changed="hasChanged"
@@ -24,7 +24,7 @@
 
 <script>
 import { isEqual, omit } from 'lodash';
-import db from '../store/firestore';
+import { db } from '@memify/shared';
 import Toolbar from '../components/Meme/Toolbar';
 import Stage from '../components/Meme/Stage';
 
@@ -46,7 +46,7 @@ export default {
       return this.$route.query.text;
     },
     meme() {
-      if (!this.$store.state.preset && this.cloudMeme) {
+      if (!this.$store.state.preset) {
         return this.cloudMeme;
       }
       const localMeme =

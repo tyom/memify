@@ -1,5 +1,5 @@
 import to from 'await-to-js';
-import db from './firestore';
+import { db } from '@memify/shared';
 import router from '../router';
 
 const GOOGLE_API_KEY = process.env.VUE_APP_GOOGLE_API_KEY;
@@ -43,8 +43,8 @@ export default {
   },
 
   RENDER() {
-    const currentHref = router.resolve(router.currentRoute).href;
-    window.location.href = currentHref.replace('#', '/r');
+    const { memeId } = router.currentRoute.params;
+    window.location.href = `/r/${memeId}`;
   },
 
   SAVE_TO_CLOUD(context, meme) {
