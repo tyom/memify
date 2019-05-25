@@ -1,24 +1,44 @@
 <template>
   <v-flex d-flex>
-    <v-flex d-flex sm6>
+    <v-flex
+      d-flex
+      sm6
+      lg4
+    >
       <v-overflow-btn
         :items="$store.state.fontFamilies"
         :value="caption.fontFamily"
+        height="30"
+        flat
         editable
         hide-details
         label="Font family"
-        @change="$emit('update:caption', { ...caption, fontFamily: $event })"
+        class="font-family"
+        @change="handleCaptionUpdate({ fontFamily: $event })"
       />
       <v-overflow-btn
         :items="fontSizes"
         :value="caption.fontSize"
+        height="30"
         class="font-sizes"
         hide-details
         label="Font size"
-        @change="$emit('update:caption', { ...caption, fontSize: $event })"
+        @change="handleCaptionUpdate({ fontSize: $event })"
       />
+      <v-menu transition="slide-y-transition" bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn flat v-on="on">
+            <v-icon>format_color_fill</v-icon>
+          </v-btn>
+        </template>
+
+        <compact-colour-picker
+          :value="caption.fill"
+          @input="handleCaptionUpdate({ fill: $event.hex })"
+        />
+      </v-menu>
     </v-flex>
-    <v-flex pa-2>
+    <v-flex>
       <v-text-field
         :value="caption.text"
         autofocus
@@ -26,14 +46,19 @@
         solo-inverted
         hide-details
         label="Caption"
-        @input="$emit('update:caption', { ...caption, text: $event })"
+        @input="handleCaptionUpdate({ text: $event })"
       />
     </v-flex>
   </v-flex>
 </template>
 
 <script>
+import { Compact } from 'vue-color';
+
 export default {
+  components: {
+    'compact-colour-picker': Compact,
+  },
   props: {
     caption: {
       type: Object,
@@ -42,8 +67,6 @@ export default {
   },
   data() {
     return {
-      selectedFontSize: this.caption.fontSize,
-      selectedFontFamily: this.caption.fontFamily,
       fontFamilies: [],
       fontSizes: [
         { text: 'auto', value: 'auto' },
@@ -59,12 +82,21 @@ export default {
   mounted() {
     return this.$store.dispatch('GET_GOOGLE_FONTS');
   },
+  methods: {
+    handleCaptionUpdate(values = {}) {
+      this.$emit('update:caption', { ...this.caption, ...values });
+    },
+  },
 };
 </script>
 
-<style scoped>
+<style>
 .font-sizes {
   min-width: 9rem;
   max-width: 15rem;
+}
+
+.font-family .v-input__append-inner {
+  border: 0 !important;
 }
 </style>

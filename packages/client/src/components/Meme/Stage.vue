@@ -106,14 +106,15 @@ export default {
       this.stage.draw();
     },
 
-    updateCaption({ text, fontSize, fontFamily } = {}) {
-      this.caption.text(text);
-
+    updateCaption({ text, fontSize, ...otherAttrs } = {}) {
       const captionFontSize =
         fontSize === 'auto' ? this.getAutoFontSize(text) : fontSize;
 
-      this.caption.fontSize(captionFontSize);
-      this.caption.fontFamily(fontFamily);
+      this.caption.setAttrs({
+        text,
+        fontSize: captionFontSize,
+        ...otherAttrs,
+      });
 
       this.layer.draw();
     },

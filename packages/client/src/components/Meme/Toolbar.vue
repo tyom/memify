@@ -1,5 +1,10 @@
 <template>
-  <v-toolbar dense flat>
+  <v-toolbar
+    dense
+    flat
+    class="Toolbar"
+  >
+    <h2>{{ meme.title }}</h2>
     <v-spacer />
     <template v-slot:extension>
       <CaptionControl
@@ -67,5 +72,10 @@ export default {
   min-height: 36px !important;
   margin-top: 6px !important;
   margin-bottom: 6px !important;
+}
+
+.Toolbar .v-toolbar__extension {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.02);
 }
 </style>
