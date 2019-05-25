@@ -61,16 +61,13 @@ export default {
   },
 
   UPDATE_MEME({ commit, state }, newMeme) {
-    if (!state.preset) {
-      return;
-    }
     const { params, query } = router.currentRoute;
     const updatedMemes = state.preset.memes.map(meme =>
       meme.id === newMeme.id ? newMeme : meme
     );
 
     router.replace({
-      name: 'preset-meme',
+      name: params.presetId ? 'preset-meme' : 'meme',
       params,
       query: {
         ...query,

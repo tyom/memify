@@ -14,7 +14,7 @@ export default new VueRouter({
       component: Meme,
     },
     {
-      path: '/presets/:presetId',
+      path: '/preset/:presetId',
       name: 'preset',
       component: Preset,
       children: [

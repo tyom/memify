@@ -9,7 +9,11 @@
           @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
           @update:caption="handleUpdateCaption"
         />
-        <v-flex d-flex align-center align-self-center>
+        <v-flex
+          d-flex
+          align-center
+          align-self-center
+        >
           <Stage :meme="meme" @update:caption="handleUpdateCaption" />
         </v-flex>
       </v-layout>
@@ -41,8 +45,8 @@ export default {
       return this.$route.query.text;
     },
     meme() {
-      if (!this.$store.state.preset) {
-        return;
+      if (!this.$store.state.preset && this.cloudMeme) {
+        return this.cloudMeme;
       }
       const localMeme =
         this.$store.state.preset.memes.find(m => m.id === this.memeId) || {};
