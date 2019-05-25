@@ -8,7 +8,7 @@
     <v-layout column fill-height>
       <v-list class="pa-1">
         <v-list-tile>
-          <v-list-tile-title>Loaded presets</v-list-tile-title>
+          <v-list-tile-title>Preset items</v-list-tile-title>
           <v-list-tile-action>
             <v-btn
               icon
