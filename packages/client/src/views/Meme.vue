@@ -72,6 +72,7 @@ export default {
         caption: {
           ...this.meme.caption,
           ...captionAttrs,
+          text: this.captionText,
         },
       };
 
