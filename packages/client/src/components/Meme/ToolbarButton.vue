@@ -1,0 +1,9 @@
+<template>
+  <v-btn
+    flat
+    v-on="on"
+    class="control-btn"
+  >
+    <v-icon><slot></slot></v-icon>
+  </v-btn>
+</template>

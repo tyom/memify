@@ -39,7 +39,11 @@
 
     <v-divider />
 
-    <v-toolbar flat color="rgba(255, 255, 255, 0.04)">
+    <v-toolbar
+      dense
+      flat
+      color="rgba(255, 255, 255, 0.04)"
+    >
       <CaptionControl
         :caption="meme.caption"
         @update:caption="$emit('update:caption', $event)"
