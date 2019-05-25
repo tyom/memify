@@ -3,6 +3,7 @@ import VueRouter from 'vue-router';
 import Meme from './views/Meme';
 import Preset from './views/Preset';
 import Create from './views/Create';
+import PresetIndex from './views/PresetIndex';
 
 Vue.use(VueRouter);
 
@@ -15,15 +16,19 @@ export default new VueRouter({
     },
     {
       path: '/preset/:presetId',
-      name: 'preset',
       component: Preset,
       children: [
         {
           path: ':memeId',
           name: 'preset-meme',
           component: Meme,
+        },
+        {
+          path: '',
+          name: 'preset-index',
+          component: PresetIndex,
         }
-      ]
+      ],
     },
     {
       path: '',

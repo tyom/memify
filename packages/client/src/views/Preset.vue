@@ -2,6 +2,7 @@
   <v-layout align-center>
     <v-flex shrink fill-height>
       <Drawer
+        v-if="memeId"
         :preset="$store.state.preset"
         @save="$store.dispatch('SAVE_TO_CLOUD')"
       />
@@ -21,8 +22,16 @@ export default {
   components: {
     Drawer,
   },
+  computed: {
+    presetId() {
+      return this.$route.params.presetId;
+    },
+    memeId() {
+      return this.$route.params.memeId;
+    }
+  },
   async created() {
-    return this.$store.dispatch('INIT_PRESET', this.$route.params.presetId);
+    return this.$store.dispatch('INIT_PRESET', this.presetId);
   },
 };
 </script>
