@@ -1,24 +1,23 @@
+import Vue from 'vue';
 import Vuex from 'vuex';
-import createPersistedState from 'vuex-persistedstate';
+import VuexPersistence from 'vuex-persist';
 import actions from './actions';
 import mutations from './mutations';
-import getters from './getters';
+
+Vue.use(Vuex);
+
+const vuexLocal = new VuexPersistence({
+  key: 'memify',
+});
 
 export const state = {
   preset: undefined,
   fontFamilies: [],
 };
 
-export default function(storeName) {
-  return new Vuex.Store({
-    state,
-    actions,
-    mutations,
-    getters,
-    plugins: [
-      createPersistedState({
-        key: storeName,
-      }),
-    ],
-  });
-}
+export default new Vuex.Store({
+  state,
+  actions,
+  mutations,
+  plugins: [vuexLocal.plugin],
+});

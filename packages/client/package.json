@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "start": "yarn build && sirv dist -p 1234",
+    "start": "sirv dist -p 1234",
     "dev": "parcel src/index.html",
-    "build": "parcel build src/index.html",
+    "build": "rm -rf dist && parcel build src/index.html",
     "now-build": "yarn build",
     "lint": "eslint src --ext .js,.vue ."
   },
@@ -24,7 +24,7 @@
     "vuefire": "^2.0.0-alpha.24",
     "vuetify": "1.5.14",
     "vuex": "3.1.1",
-    "vuex-persistedstate": "2.5.4",
+    "vuex-persist": "2.0.1",
     "webfontloader": "1.6.28"
   },
   "devDependencies": {

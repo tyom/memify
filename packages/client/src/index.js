@@ -1,18 +1,17 @@
 import Vue from 'vue';
-import Vuex from 'vuex';
-import { firestorePlugin } from 'vuefire';
 import Vuetify from 'vuetify';
-import App from './views/App.vue';
 import store from './store';
 import router from './router';
+import App from './views/App';
 import 'vuetify/dist/vuetify.min.css';
 
-Vue.use(firestorePlugin);
-Vue.use(Vuex);
 Vue.use(Vuetify);
 
+Vue.config.productionTip = false;
+
 new Vue({
+  el: '#root',
   store,
   router,
   render: h => h(App),
-}).$mount('#root');
+});
