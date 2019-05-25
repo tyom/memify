@@ -11,6 +11,7 @@
         />
         <v-flex
           d-flex
+          pa-3
           align-center
           align-self-center
         >
