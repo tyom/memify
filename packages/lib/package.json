@@ -1,0 +1,8 @@
+{
+  "name": "@memify/lib",
+  "version": "0.1.0",
+  "license": "MIT",
+  "dependencies": {
+    "validator": "10.11.0"
+  }
+}

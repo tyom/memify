@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { isValidUrl } from '../../../utils';
+import { isValidUrl } from '@memify/lib';
 
 export default {
   data() {

@@ -1,0 +1,33 @@
+{
+  "name": "@memify/server",
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "micro src/index.js",
+    "dev": "micro-dev src/index.js",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@memify/lib": "*",
+    "atob": "2.1.2",
+    "await-to-js": "2.1.1",
+    "btoa": "1.2.1",
+    "chrome-aws-lambda": "1.16.1",
+    "lodash": "4.17.11",
+    "micro": "^9.3.4",
+    "microrouter": "3.1.3",
+    "puppeteer-core": "1.16.0",
+    "query-string": "6.5.0"
+  },
+  "devDependencies": {
+    "eslint": "^5.16.0",
+    "eslint-config-tyom": "2.4.0",
+    "micro-dev": "^3.0.0",
+    "micro-proxy": "1.1.0",
+    "parcel-bundler": "1.12.3",
+    "puppeteer": "1.16.0",
+    "sirv-cli": "0.4.2",
+    "vue-hot-reload-api": "2.3.3",
+    "vue-template-compiler": "2.6.10"
+  }
+}

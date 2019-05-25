@@ -30,6 +30,7 @@ async function renderImage(composerUrl, { format = 'jpeg', preset, ...query }) {
   await page.goto(pageUrl, { waitUntil: 'networkidle0' });
 
   await page.evaluate(() => {
+    // eslint-disable-next-line no-undef
     document.querySelector('.v-toolbar').style.display = 'none';
   });
 

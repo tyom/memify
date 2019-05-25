@@ -3,7 +3,7 @@ const { router, get } = require('microrouter');
 const qs = require('querystring');
 const btoa = require('btoa');
 const atob = require('atob');
-const { isValidUrl } = require('../utils');
+const { isValidUrl } = require('@memify/lib');
 const { renderImage } = require('./render');
 
 const error = (code = 404, message = 'Not Found') => (req, res) => {
