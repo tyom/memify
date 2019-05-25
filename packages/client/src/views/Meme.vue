@@ -9,11 +9,7 @@
           @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
           @update:caption="handleUpdateCaption"
         />
-        <v-flex
-          d-flex
-          align-center
-          align-self-center
-        >
+        <v-flex d-flex align-center align-self-center>
           <Stage :meme="meme" @update:caption="handleUpdateCaption" />
         </v-flex>
       </v-layout>
@@ -22,7 +18,7 @@
 </template>
 
 <script>
-import { isEqual } from 'lodash';
+import { isEqual, omit } from 'lodash';
 import db from '../store/firestore';
 import Toolbar from '../components/Meme/Toolbar';
 import Stage from '../components/Meme/Stage';
@@ -59,13 +55,22 @@ export default {
       };
     },
     hasChanged() {
-      return this.cloudMeme && !isEqual(this.cloudMeme, this.meme);
+      if (!this.cloudMeme) {
+        return false;
+      }
+      return !isEqual(
+        omit(this.cloudMeme, 'caption.text'),
+        omit(this.meme, 'caption.text')
+      );
     },
   },
-  firestore() {
-    return {
-      cloudMeme: db.collection('memes').doc(this.memeId),
-    };
+  watch: {
+    memeId: {
+      immediate: true,
+      handler(id) {
+        return this.$bind('cloudMeme', db.collection('memes').doc(id));
+      },
+    },
   },
   methods: {
     handleUpdateCaption(captionAttrs) {
