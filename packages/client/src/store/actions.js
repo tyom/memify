@@ -1,6 +1,7 @@
 import to from 'await-to-js';
 import { get, omit } from 'lodash';
 import hash from 'object-hash';
+import { Base64 } from 'js-base64';
 import db from '../store/firestore';
 import router from '../router';
 
@@ -53,18 +54,27 @@ export default {
   },
 
   async INIT_MEME({ commit, state }, memeId) {
+    const { params, query } = router.currentRoute;
     const localPresetMemes = get(state.preset, 'memes', []);
-    const localMeme = localPresetMemes.find(m => m.id === memeId);
+    const localMeme = params.presetId
+      ? localPresetMemes.find(m => m.id === memeId)
+      : state.meme;
 
-    if (localMeme) {
-      return commit('setMeme', localMeme);
+    if (memeId === 'snapshot' && query.d) {
+      try {
+        const snapshotMeme = JSON.parse(Base64.decode(query.d));
+        return commit('setMeme', snapshotMeme);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to parse snapshot');
+      }
     }
 
     const cloudMeme = await getDocumentFromCloud('memes', memeId);
     const cloudMemeHash = hash(omit(cloudMeme, 'caption.text'));
 
+    commit('setMeme', localMeme || cloudMeme);
     commit('setCloudMemeHash', { memeId, hash: cloudMemeHash });
-    commit('setMeme', cloudMeme);
   },
 
   UPDATE_MEME({ commit, dispatch }, updatedMeme) {
@@ -81,10 +91,13 @@ export default {
     });
 
     commit('setMeme', updatedMeme);
-    dispatch('UPDATE_MEME_IN_PRESET', {
-      presetId: params.presetId,
-      updatedMeme,
-    });
+
+    if (params.presetId) {
+      dispatch('UPDATE_MEME_IN_PRESET', {
+        presetId: params.presetId,
+        updatedMeme,
+      });
+    }
   },
 
   UPDATE_MEME_IN_PRESET({ commit, state }, { presetId, updatedMeme }) {
@@ -100,11 +113,17 @@ export default {
     });
   },
 
-  RENDER() {
-    const { memeId } = router.currentRoute.params;
-    const { text = '' } = router.currentRoute.query;
+  RENDER({ state }) {
+    const memeSnapshot = {
+      ...state.meme,
+      caption: {
+        ...state.meme.caption,
+        text: router.currentRoute.query.text,
+      },
+    };
+    const snapshotBase64 = Base64.encodeURI(JSON.stringify(memeSnapshot));
 
-    window.location.href = `/r/${memeId}?text=${encodeURIComponent(text)}`;
+    window.location.href = `/r/snapshot?d=${snapshotBase64}`;
   },
 
   SAVE_TO_CLOUD({ commit }, meme) {
@@ -124,6 +143,14 @@ export default {
 
     const updatedMemeMemeHash = hash(omit(updatedMeme, 'caption.text'));
     commit('setCloudMemeHash', { memeId: meme.id, hash: updatedMemeMemeHash });
+  },
+
+  async RESTORE_FROM_CLOUD({ commit }, memeId) {
+    if (!memeId) {
+      throw new Error('Meme ID is missing');
+    }
+    const cloudMeme = await getDocumentFromCloud('memes', memeId);
+    commit('setMeme', cloudMeme);
   },
 
   async GET_GOOGLE_FONTS({ commit }) {

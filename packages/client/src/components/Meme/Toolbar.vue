@@ -16,7 +16,10 @@
             aria-label="save edits to cloud"
             @click="$emit('save')"
           >
-            <v-icon>cloud_upload</v-icon>
+            <v-icon left>
+              cloud_upload
+            </v-icon>
+            Save
           </v-btn>
         </template>
         <span>Save edits</span>
@@ -27,10 +30,30 @@
           <v-btn
             v-on="on"
             flat
+            aria-label="restore edits from cloud"
+            @click="$emit('restore')"
+          >
+            <v-icon left>
+              cloud_download
+            </v-icon>
+            Restore
+          </v-btn>
+        </template>
+        <span>Restore edits</span>
+      </v-tooltip>
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn
+            v-on="on"
+            flat
             aria-label="render image"
             @click="$emit('render')"
           >
-            <v-icon>photo_camera</v-icon>
+            <v-icon left>
+              photo_camera
+            </v-icon>
+            Render
           </v-btn>
         </template>
         <span>Render image</span>

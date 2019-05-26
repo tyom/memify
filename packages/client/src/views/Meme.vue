@@ -6,6 +6,7 @@
           :meme="meme"
           :has-changed="hasChanged"
           @render="$store.dispatch('RENDER', meme)"
+          @restore="$store.dispatch('RESTORE_FROM_CLOUD', meme.id)"
           @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
           @update:caption="handleUpdateCaption"
         />
@@ -48,6 +49,9 @@ export default {
       });
     },
     hasChanged() {
+      if (this.meme.id !== this.memeId) {
+        return false;
+      }
       const currentHash = hash(omit(this.meme, 'caption.text'));
       const cloudHash = this.$store.state.cloudMemeHashes[this.memeId];
       return currentHash !== cloudHash;
