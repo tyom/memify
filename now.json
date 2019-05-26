@@ -21,7 +21,7 @@
     {
       "src": "packages/server/src/index.js",
       "use": "@now/node",
-      "config": { "maxLambdaSize": "50mb" }
+      "config": { "maxLambdaSize": "42mb" }
     }
   ],
   "routes": [
