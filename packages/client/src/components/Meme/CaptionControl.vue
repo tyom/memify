@@ -1,9 +1,9 @@
 <template>
-  <v-flex d-flex class="CaptionControl">
+  <v-layout row class="CaptionControl">
     <v-flex
       d-flex
+      shrink
       align-items="center"
-      lg3
     >
       <v-overflow-btn
         :items="$store.state.fontFamilies"
@@ -22,30 +22,34 @@
         height="36"
         hide-details
         label="Font size"
-        class="font-sizes"
+        class="font-sizes ml-2"
         @change="handleCaptionUpdate({ fontSize: $event })"
       />
     </v-flex>
     <v-flex
       d-flex
       px-2
-      lg3
+      shrink
     >
-      <v-menu transition="slide-y-transition" bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn
-            flat
-            v-on="on"
-            class="control-btn"
-          >
-            <v-icon>format_color_fill</v-icon>
-          </v-btn>
-        </template>
-        <compact-colour-picker
-          :value="caption.fill"
-          @input="handleCaptionUpdate({ fill: $event.hex })"
-        />
-      </v-menu>
+      <v-divider vertical />
+      <v-flex d-flex>
+        <v-menu transition="slide-y-transition" bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              flat
+              v-on="on"
+              class="control-btn"
+            >
+              <v-icon>format_color_fill</v-icon>
+            </v-btn>
+          </template>
+          <compact-colour-picker
+            :value="caption.fill"
+            @input="handleCaptionUpdate({ fill: $event.hex })"
+          />
+        </v-menu>
+      </v-flex>
+      <v-divider vertical />
       <v-btn-toggle
         dark
         :value="caption.align"
@@ -73,6 +77,7 @@
           <v-icon>format_align_right</v-icon>
         </v-btn>
       </v-btn-toggle>
+      <v-divider vertical />
       <v-btn-toggle
         dark
         :value="caption.verticalAlign"
@@ -101,7 +106,7 @@
         </v-btn>
       </v-btn-toggle>
     </v-flex>
-    <v-flex lg8>
+    <v-flex grow>
       <v-text-field
         :value="caption.text"
         autofocus
@@ -113,7 +118,7 @@
         @input="handleCaptionUpdate({ text: $event })"
       />
     </v-flex>
-  </v-flex>
+  </v-layout>
 </template>
 
 <script>
