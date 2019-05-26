@@ -1,51 +1,36 @@
-const { send } = require('micro');
-const { router, get } = require('microrouter');
-const qs = require('querystring');
-const btoa = require('btoa');
-const atob = require('atob');
-const { isValidUrl } = require('@memify/lib');
+import { send } from 'micro';
+import { router, get } from 'microrouter';
+import { db } from '@memify/shared';
 const { renderImage } = require('./render');
 
 const error = (code = 404, message = 'Not Found') => (req, res) => {
   return send(res, code, message);
 };
 
-function isBase64(str = '') {
-  if (str.trim() === '') {
-    return false;
-  }
-  try {
-    return btoa(atob(str)) === str;
-  } catch (err) {
-    return false;
-  }
-}
-
-const configureImage = options => async (req, res) => {
+const configureImage = (meme, query) => async (req, res) => {
   res.setHeader('Content-Type', 'image/jpeg');
   const composerUrl = process.env.COMPOSER_URL || `https://${req.headers.host}`;
-  const image = await renderImage(composerUrl, options);
+  const image = await renderImage(composerUrl, { meme, query });
   return send(res, 200, image);
 };
 
 async function renderer(req, res) {
-  let { preset = '' } = req.params;
-  let { text, presetUrl } = req.query;
+  let { memeId } = req.params;
 
-  if (isBase64(preset)) {
-    const [decodedPreset, decodedQueryString] = atob(preset).split('?');
-    const query = qs.parse(decodedQueryString);
-    preset = decodedPreset;
-    presetUrl = query.presetUrl;
-    text = query.text;
+  const memeDoc = await db
+    .collection('memes')
+    .doc(memeId)
+    .get();
+
+  if (!memeDoc.exists) {
+    return error(404, `Could't find meme ${memeId}`)(req, res);
   }
-
-  if (isValidUrl(presetUrl)) {
-    const image = configureImage({ preset, presetUrl, text, ...req.query });
-    return image(req, res);
-  }
-
-  return error(400, 'Invalid URL')(req, res);
+  const meme = memeDoc.data();
+  const image = configureImage(meme, req.query);
+  return image(req, res);
 }
 
-module.exports = router(get('/r/:preset', renderer), get('/*', error()));
+export default router(
+  get('/r/:memeId', renderer),
+  get('/*', error('Invalid URL: Meme ID is required'))
+);

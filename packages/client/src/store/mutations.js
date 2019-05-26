@@ -3,6 +3,10 @@ export default {
     state.preset = preset;
   },
 
+  setMeme(state, meme) {
+    state.meme = meme;
+  },
+
   setFontFamilies(state, fontFamilies) {
     state.fontFamilies = fontFamilies;
   }

@@ -12,6 +12,7 @@ const vuexLocal = new VuexPersistence({
 
 export const state = {
   preset: undefined,
+  meme: undefined,
   fontFamilies: [],
 };
 

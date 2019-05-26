@@ -16,7 +16,7 @@ async function getPresetMemesFromCloud(presetDoc) {
 
 export default {
   async INIT_APP({ state, dispatch }) {
-    if (!state.fontFamilies) {
+    if (!state.fontFamilies.length) {
       dispatch('GET_GOOGLE_FONTS');
     }
   },
@@ -42,9 +42,16 @@ export default {
     });
   },
 
+  INIT_MEME({ commit, state }, meme) {
+    if (!state.meme) {
+      commit('setMeme', meme);
+    }
+  },
+
   RENDER() {
     const { memeId } = router.currentRoute.params;
-    window.location.href = `/r/${memeId}`;
+    const { text = '' } = router.currentRoute.query;
+    window.location.href = `/r/${memeId}?text=${encodeURIComponent(text)}`;
   },
 
   SAVE_TO_CLOUD(context, meme) {
@@ -62,9 +69,6 @@ export default {
 
   UPDATE_MEME({ commit, state }, newMeme) {
     const { params, query } = router.currentRoute;
-    const updatedMemes = state.preset.memes.map(meme =>
-      meme.id === newMeme.id ? newMeme : meme
-    );
 
     router.replace({
       name: params.presetId ? 'preset-meme' : 'meme',
@@ -75,10 +79,17 @@ export default {
       },
     });
 
-    commit('setPreset', {
-      ...state.preset,
-      memes: updatedMemes,
-    });
+    commit('setMeme', newMeme);
+
+    if (params.presetId) {
+      const updatedMemes = state.preset.memes.map(meme =>
+        meme.id === newMeme.id ? newMeme : meme
+      );
+      commit('setPreset', {
+        ...state.preset,
+        memes: updatedMemes,
+      });
+    }
   },
 
   async GET_GOOGLE_FONTS({ commit }) {

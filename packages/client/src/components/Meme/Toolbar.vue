@@ -62,7 +62,7 @@ export default {
   props: {
     meme: {
       type: Object,
-      default: () => ({}),
+      required: true,
     },
     hasChanged: {
       type: Boolean,

@@ -10,13 +10,13 @@ if (isProd) {
   puppeteer = require('puppeteer');
 }
 
-async function renderImage(composerUrl, { format = 'jpeg', preset, ...query }) {
+async function renderImage(composerUrl, { format = 'jpeg', meme, query }) {
   const browser = await puppeteer.launch({
     args: chrome.args,
     executablePath: await chrome.executablePath,
     headless: true,
     defaultViewport: {
-      deviceScaleFactor: 1.2,
+      // deviceScaleFactor: 1.2,
       // width/height ignored and taken from image dimensions
       width: 0,
       height: 0,
@@ -24,20 +24,21 @@ async function renderImage(composerUrl, { format = 'jpeg', preset, ...query }) {
   });
 
   const queryString = qs.stringify(query);
-  const pageUrl = `${composerUrl}/#/${preset}?${queryString}`;
+  const pageUrl = `${composerUrl}/#/${meme.id}?${queryString}`;
   const page = await browser.newPage();
 
-  await page.goto(pageUrl, { waitUntil: 'networkidle0' });
+  await page.goto(pageUrl, { waitUntil: 'networkidle2' });
 
   await page.evaluate(() => {
     // eslint-disable-next-line no-undef
-    document.querySelector('.v-toolbar').style.display = 'none';
+    // document.querySelector('.Toolbar').style.display = 'none';
   });
 
-  const image = await page.$('.Stage');
-  if (preset.webfont) {
+  if (meme.webfont) {
     await page.waitForSelector('.wf-active'); // web font loaded
   }
+
+  const image = await page.$('.Stage');
   const file = await image.screenshot({ type: format });
   await browser.close();
   return file;

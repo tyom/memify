@@ -3,15 +3,15 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "start": "micro src/index.js",
-    "dev": "micro-dev src/index.js",
+    "start": "node -r esm src/index.js",
+    "dev": "node -r esm -r dotenv-flow/config ./node_modules/.bin/micro-dev src/index.js -- --dotenv-flow-path=../../",
     "lint": "eslint ."
   },
   "dependencies": {
     "@memify/shared": "*",
-    "atob": "2.1.2",
     "await-to-js": "2.1.1",
-    "btoa": "1.2.1",
+    "esm": "^3.2.25",
+    "dotenv-flow": "^0.4.0",
     "chrome-aws-lambda": "1.16.1",
     "lodash": "4.17.11",
     "micro": "^9.3.4",

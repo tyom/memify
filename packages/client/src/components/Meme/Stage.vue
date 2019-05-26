@@ -130,7 +130,7 @@ export default {
       if (textLines.length === 0) {
         return;
       }
-      const { minFontSize = 12, maxFontSize = 60 } = this.preset.text;
+      const { minFontSize = 12, maxFontSize = 60 } = this.caption;
       let fontSize = box.width / (text.length * 0.8);
       if (fontSize < minFontSize) {
         fontSize = minFontSize;

@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import { isEqual, omit } from 'lodash';
+import { isEqual, omit, merge } from 'lodash';
 import { db } from '@memify/shared';
 import Toolbar from '../components/Meme/Toolbar';
 import Stage from '../components/Meme/Stage';
@@ -46,18 +46,21 @@ export default {
       return this.$route.query.text;
     },
     meme() {
-      if (!this.$store.state.preset) {
-        return this.cloudMeme;
+      const localMeme = this.$store.state.meme || {};
+
+      if (localMeme.id === this.memeId) {
+        return localMeme;
       }
-      const localMeme =
-        this.$store.state.preset.memes.find(m => m.id === this.memeId) || {};
-      return {
-        ...localMeme,
-        caption: {
-          ...localMeme.caption,
-          text: this.captionText,
-        },
-      };
+
+      if (this.cloudMeme) {
+        return merge({}, this.cloudMeme, {
+          caption: {
+            text: this.captionText,
+          },
+        });
+      }
+
+      return null;
     },
     hasChanged() {
       if (!this.cloudMeme) {
@@ -75,6 +78,9 @@ export default {
       handler(id) {
         return this.$bind('cloudMeme', db.collection('memes').doc(id));
       },
+    },
+    meme(meme) {
+      return this.$store.dispatch('INIT_MEME', meme);
     },
   },
   methods: {
