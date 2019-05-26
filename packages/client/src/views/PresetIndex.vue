@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { db } from '@memify/shared';
+import db from '../store/firestore';
 
 export default {
   data() {

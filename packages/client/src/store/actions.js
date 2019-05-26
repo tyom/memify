@@ -1,5 +1,5 @@
 import to from 'await-to-js';
-import { db } from '@memify/shared';
+import db from '../store/firestore';
 import router from '../router';
 
 const GOOGLE_API_KEY = process.env.VUE_APP_GOOGLE_API_KEY;

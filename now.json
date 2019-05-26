@@ -4,20 +4,28 @@
   "alias": "memify.tyom.dev",
   "build": {
     "env": {
-      "VUE_APP_GOOGLE_API_KEY": "@google-api-key"
+      "VUE_APP_GOOGLE_API_KEY": "@google-api-key",
+      "FIREBASE_API_KEY": "@firebase-api-key",
+      "FIREBASE_PROJECT_ID": "memify-tyom",
+      "FIREBASE_URL": "https://memify-tyom.firebaseio.com"
     }
   },
+  "env": {
+    "FIREBASE_API_KEY": "@firebase-api-key",
+    "FIREBASE_PROJECT_ID": "memify-tyom",
+    "FIREBASE_URL": "https://memify-tyom.firebaseio.com"
+  },
   "builds": [
-    { "src": "package.json", "use": "@now/static-build" },
-    { "src": "public/*", "use": "@now/static" },
+    { "src": "packages/client/package.json", "use": "@now/static-build" },
+    { "src": "packages/client/public/*", "use": "@now/static" },
     {
-      "src": "src/server/index.js",
+      "src": "packages/server/src/index.js",
       "use": "@now/node",
-      "config": { "maxLambdaSize": "40mb" }
+      "config": { "maxLambdaSize": "50mb" }
     }
   ],
   "routes": [
-    { "src": "/r/(.*)", "dest": "/src/server/index.js" },
-    { "src": "/(.*)", "dest": "/dist/$1" }
+    { "src": "/r/(.*)", "dest": "packages/server/src/index.js" },
+    { "src": "/(.*)", "dest": "packages/client/$1" }
   ]
 }

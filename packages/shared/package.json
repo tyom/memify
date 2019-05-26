@@ -1,8 +1,0 @@
-{
-  "name": "@memify/shared",
-  "version": "0.1.0",
-  "license": "MIT",
-  "dependencies": {
-    "firebase": "6.0.4"
-  }
-}

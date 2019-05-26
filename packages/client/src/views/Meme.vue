@@ -24,7 +24,7 @@
 
 <script>
 import { isEqual, omit, merge } from 'lodash';
-import { db } from '@memify/shared';
+import db from '../store/firestore';
 import Toolbar from '../components/Meme/Toolbar';
 import Stage from '../components/Meme/Stage';
 

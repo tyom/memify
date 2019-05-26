@@ -3,20 +3,19 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "start": "node -r esm src/index.js",
-    "dev": "node -r esm -r dotenv-flow/config ./node_modules/.bin/micro-dev src/index.js -- --dotenv-flow-path=../../",
+    "start": "node -r dotenv-flow/config ./node_modules/.bin/micro src/index.js -- --dotenv-flow-path=../../",
+    "dev": "node -r dotenv-flow/config ./node_modules/.bin/micro-dev src/index.js -- --dotenv-flow-path=../../",
     "lint": "eslint ."
   },
   "dependencies": {
-    "@memify/shared": "*",
     "await-to-js": "2.1.1",
-    "esm": "^3.2.25",
+    "chrome-aws-lambda": "1.17.0",
     "dotenv-flow": "^0.4.0",
-    "chrome-aws-lambda": "1.16.1",
+    "esm": "^3.2.25",
     "lodash": "4.17.11",
     "micro": "^9.3.4",
     "microrouter": "3.1.3",
-    "puppeteer-core": "1.16.0",
+    "puppeteer-core": "1.17.0",
     "query-string": "6.5.0"
   },
   "devDependencies": {
@@ -25,7 +24,7 @@
     "micro-dev": "^3.0.0",
     "micro-proxy": "1.1.0",
     "parcel-bundler": "1.12.3",
-    "puppeteer": "1.16.0",
+    "puppeteer": "1.17.0",
     "sirv-cli": "0.4.2",
     "vue-hot-reload-api": "2.3.3",
     "vue-template-compiler": "2.6.10"

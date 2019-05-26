@@ -1,5 +1,6 @@
-const chrome = require('chrome-aws-lambda');
-const qs = require('query-string');
+import * as chrome from 'chrome-aws-lambda';
+import qs from 'query-string';
+
 let puppeteer;
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -10,7 +11,7 @@ if (isProd) {
   puppeteer = require('puppeteer');
 }
 
-async function renderImage(composerUrl, { format = 'jpeg', meme, query }) {
+export async function renderImage(composerUrl, { format = 'jpeg', memeId, query }) {
   const browser = await puppeteer.launch({
     args: chrome.args,
     executablePath: await chrome.executablePath,
@@ -24,17 +25,17 @@ async function renderImage(composerUrl, { format = 'jpeg', meme, query }) {
   });
 
   const queryString = qs.stringify(query);
-  const pageUrl = `${composerUrl}/#/${meme.id}?${queryString}`;
+  const pageUrl = `${composerUrl}/#/${memeId}?${queryString}`;
   const page = await browser.newPage();
 
   await page.goto(pageUrl, { waitUntil: 'networkidle2' });
 
   await page.evaluate(() => {
     // eslint-disable-next-line no-undef
-    // document.querySelector('.Toolbar').style.display = 'none';
+    document.querySelector('.Toolbar').style.display = 'none';
   });
 
-  if (meme.webfont) {
+  if (await page.$('.wf-active') !== null) {
     await page.waitForSelector('.wf-active'); // web font loaded
   }
 
@@ -43,5 +44,3 @@ async function renderImage(composerUrl, { format = 'jpeg', meme, query }) {
   await browser.close();
   return file;
 }
-
-module.exports = { renderImage };
