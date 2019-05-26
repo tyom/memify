@@ -34,11 +34,12 @@ export default {
     if (!cloudPresetDoc.exists) {
       throw new Error(`Couldn't find preset: ${presetId}`);
     }
-
-    const memes = await getPresetMemesFromCloud(cloudPresetDoc);
+    const cloudPreset = cloudPresetDoc.data();
+    const clouPresetMemes = await getPresetMemesFromCloud(cloudPresetDoc);
     commit('setPreset', {
       id: presetId,
-      memes,
+      title: cloudPreset.title,
+      memes: clouPresetMemes,
     });
   },
 

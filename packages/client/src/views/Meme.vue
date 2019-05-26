@@ -49,7 +49,11 @@ export default {
       const localMeme = this.$store.state.meme || {};
 
       if (localMeme.id === this.memeId) {
-        return localMeme;
+        return merge({}, localMeme, {
+          caption: {
+            text: this.captionText,
+          },
+        });
       }
 
       if (this.cloudMeme) {
