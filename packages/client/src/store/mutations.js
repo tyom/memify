@@ -4,7 +4,11 @@ export default {
   },
 
   setMeme(state, meme) {
-    state.meme = meme;
+    state.memes[meme.id] = meme;
+  },
+
+  setSnapshotMemeId(state, memeId) {
+    state.snapshotId = memeId;
   },
 
   setCloudMemeHash(state, { memeId, hash }) {

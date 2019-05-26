@@ -34,19 +34,17 @@ export default {
     Toolbar,
     Stage,
   },
+  data() {
+    return {
+      meme: undefined,
+    };
+  },
   computed: {
     memeId() {
       return this.$route.params.memeId;
     },
-    meme() {
-      if (!this.$store.state.meme) {
-        return;
-      }
-      return merge({}, this.$store.state.meme, {
-        caption: {
-          text: this.$route.query.text,
-        },
-      });
+    captionText() {
+      return this.$route.query.text;
     },
     hasChanged() {
       if (this.meme.id !== this.memeId) {
@@ -60,13 +58,32 @@ export default {
   watch: {
     memeId: {
       immediate: true,
-      handler(id) {
-        return this.$store.dispatch('INIT_MEME', id);
+      async handler(memeId) {
+        await this.$store.dispatch('INIT_MEME', memeId);
+        const id = this.$store.state.snapshotId || this.$route.params.memeId;
+        const currentMeme = this.$store.state.memes[id];
+        this.handleUpdateMeme(currentMeme);
       },
     },
+    '$store.state.memes': {
+      deep: true,
+      handler(memes) {
+        this.handleUpdateMeme(memes[this.memeId]);
+      }
+    }
   },
   methods: {
-    handleUpdateCaption(captionAttrs = {}) {
+    handleUpdateMeme(meme) {
+      if (!meme) {
+        return;
+      }
+      this.meme = merge({}, meme, {
+        caption: {
+          text: this.captionText,
+        },
+      });
+    },
+    async handleUpdateCaption(captionAttrs = {}) {
       let updatedMeme = {
         ...this.meme,
         id: this.memeId,
@@ -78,11 +95,12 @@ export default {
           ...this.meme.webfont,
           google: {
             families: [captionAttrs.fontFamily],
-          }
-        }
+          },
+        },
       };
 
-      return this.$store.dispatch('UPDATE_MEME', updatedMeme);
+      await this.$store.dispatch('UPDATE_MEME', updatedMeme);
+      this.handleUpdateMeme(updatedMeme);
     },
   },
 };

@@ -106,6 +106,7 @@
         :value="caption.text"
         autofocus
         flat
+        clearable
         solo-inverted
         hide-details
         label="Caption"

@@ -8,39 +8,41 @@
       <h2>{{ meme.title }}</h2>
       <v-spacer />
 
-      <v-tooltip bottom v-if="hasChanged">
-        <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            flat
-            aria-label="save edits to cloud"
-            @click="$emit('save')"
-          >
-            <v-icon left>
-              cloud_upload
-            </v-icon>
-            Save
-          </v-btn>
-        </template>
-        <span>Save edits</span>
-      </v-tooltip>
+      <template v-if="$route.params.memeId !== 'snapshot'">
+        <v-tooltip bottom v-if="hasChanged">
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              flat
+              aria-label="save edits to cloud"
+              @click="$emit('save')"
+            >
+              <v-icon left>
+                cloud_upload
+              </v-icon>
+              Save
+            </v-btn>
+          </template>
+          <span>Save edits</span>
+        </v-tooltip>
 
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            flat
-            aria-label="restore edits from cloud"
-            @click="$emit('restore')"
-          >
-            <v-icon left>
-              cloud_download
-            </v-icon>
-            Restore
-          </v-btn>
-        </template>
-        <span>Restore edits</span>
-      </v-tooltip>
+        <v-tooltip bottom>
+          <template v-slot:activator="{ on }">
+            <v-btn
+              v-on="on"
+              flat
+              aria-label="restore edits from cloud"
+              @click="$emit('restore')"
+            >
+              <v-icon left>
+                cloud_download
+              </v-icon>
+              Restore
+            </v-btn>
+          </template>
+          <span>Restore edits</span>
+        </v-tooltip>
+      </template>
 
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">

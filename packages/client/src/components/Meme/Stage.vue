@@ -1,5 +1,5 @@
 <template>
-  <div class="Stage"></div>
+  <div :class="{'loaded': loaded}" class="Stage"></div>
 </template>
 
 <script>
@@ -17,6 +17,7 @@ export default {
   },
   data() {
     return {
+      loaded: false,
       stage: null,
       layer: null,
       caption: null,
@@ -39,6 +40,8 @@ export default {
   },
   methods: {
     async buildStage() {
+      this.loaded = false;
+
       if (!this.meme.id) {
         return;
       }
@@ -58,6 +61,8 @@ export default {
       this.updateCaption({
         ...this.meme.caption,
       });
+
+      this.loaded = true;
     },
 
     async buildLayer(meme = {}) {

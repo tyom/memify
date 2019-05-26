@@ -30,17 +30,26 @@ export async function renderImage(composerUrl, { format = 'jpeg', memeId, query 
 
   await page.goto(pageUrl, { waitUntil: 'networkidle2' });
 
-  await page.evaluate(() => {
-    // eslint-disable-next-line no-undef
-    document.querySelector('.Toolbar').style.display = 'none';
-  });
-
+  if (await page.$('.Toolbar') !== null) {
+    await page.evaluate(() => {
+      // eslint-disable-next-line no-undef
+      document.querySelector('.Toolbar').style.display = 'none';
+    });
+  }
   if (await page.$('.wf-active') !== null) {
     await page.waitForSelector('.wf-active'); // web font loaded
   }
 
   const image = await page.$('.Stage');
-  const file = await image.screenshot({ type: format });
-  await browser.close();
-  return file;
+  await page.waitForSelector('.Stage.loaded');
+
+  try {
+    const file = await image.screenshot({ type: format });
+    await browser.close();
+    return file;
+  } catch (error) {
+    console.error(error);
+    await browser.close();
+    return 'no image';
+  }
 }
