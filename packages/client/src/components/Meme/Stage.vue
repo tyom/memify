@@ -23,14 +23,18 @@ export default {
     };
   },
   watch: {
-    meme(meme, prevMeme) {
-      if (!isEqual(meme.webfont, prevMeme.webfont) || meme.id !== prevMeme.id) {
+    async meme(meme, prevMeme) {
+      if (!isEqual(meme.webfont, prevMeme.webfont)) {
+        await loadWebFont(this.meme.webfont);
+      }
+      if (meme.id !== prevMeme.id) {
         return this.buildStage();
       }
       this.updateCaption(this.meme.caption);
     },
   },
-  mounted() {
+  async mounted() {
+    await loadWebFont(this.meme.webfont);
     this.buildStage();
   },
   methods: {
@@ -45,8 +49,6 @@ export default {
       this.stage = stage;
       this.layer = layer;
       this.caption = caption;
-
-      await loadWebFont(this.meme.webfont);
 
       const composedLayer = await this.buildLayer(this.meme);
       this.stage.add(composedLayer);
@@ -65,7 +67,7 @@ export default {
       });
 
       const overlayImage = await createImage({
-        ...(meme.overlayImage || {} ),
+        ...(meme.overlayImage || {}),
         name: 'overlay',
         listening: false,
       });
@@ -107,6 +109,9 @@ export default {
     },
 
     updateCaption({ text, fontSize, ...otherAttrs } = {}) {
+      if (!this.caption) {
+        return;
+      }
       const captionFontSize =
         fontSize === 'auto' ? this.getAutoFontSize(text) : fontSize;
 

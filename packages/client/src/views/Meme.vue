@@ -23,8 +23,8 @@
 </template>
 
 <script>
-import { isEqual, omit, merge } from 'lodash';
-import db from '../store/firestore';
+import { omit, merge } from 'lodash';
+import hash from 'object-hash';
 import Toolbar from '../components/Meme/Toolbar';
 import Stage from '../components/Meme/Stage';
 
@@ -33,79 +33,51 @@ export default {
     Toolbar,
     Stage,
   },
-  data() {
-    return {
-      cloudMeme: null,
-    };
-  },
   computed: {
     memeId() {
       return this.$route.params.memeId;
     },
-    captionText() {
-      return this.$route.query.text;
-    },
     meme() {
-      const localMeme = this.$store.state.meme || {};
-
-      if (localMeme.id === this.memeId) {
-        return merge({}, localMeme, {
-          caption: {
-            text: this.captionText,
-          },
-        });
+      if (!this.$store.state.meme) {
+        return;
       }
-
-      if (this.cloudMeme) {
-        return merge({}, this.cloudMeme, {
-          caption: {
-            text: this.captionText,
-          },
-        });
-      }
-
-      return null;
+      return merge({}, this.$store.state.meme, {
+        caption: {
+          text: this.$route.query.text,
+        },
+      });
     },
     hasChanged() {
-      if (!this.cloudMeme) {
-        return false;
-      }
-      return !isEqual(
-        omit(this.cloudMeme, 'caption.text'),
-        omit(this.meme, 'caption.text')
-      );
+      const currentHash = hash(omit(this.meme, 'caption.text'));
+      const cloudHash = this.$store.state.cloudMemeHashes[this.memeId];
+      return currentHash !== cloudHash;
     },
   },
   watch: {
     memeId: {
       immediate: true,
       handler(id) {
-        return this.$bind('cloudMeme', db.collection('memes').doc(id));
+        return this.$store.dispatch('INIT_MEME', id);
       },
-    },
-    meme(meme) {
-      return this.$store.dispatch('INIT_MEME', meme);
     },
   },
   methods: {
-    handleUpdateCaption(captionAttrs) {
-      const updatedMeme = {
-        id: this.memeId,
+    handleUpdateCaption(captionAttrs = {}) {
+      let updatedMeme = {
         ...this.meme,
+        id: this.memeId,
         caption: {
           ...this.meme.caption,
           ...captionAttrs,
         },
-      };
-
-      if (captionAttrs.fontFamily) {
-        updatedMeme.webfont = {
-          ...updatedMeme.webfont,
+        webfont: {
+          ...this.meme.webfont,
           google: {
             families: [captionAttrs.fontFamily],
-          },
-        };
-      }
+          }
+        }
+      };
+
       return this.$store.dispatch('UPDATE_MEME', updatedMeme);
     },
   },

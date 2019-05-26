@@ -7,6 +7,10 @@ export default {
     state.meme = meme;
   },
 
+  setCloudMemeHash(state, { memeId, hash }) {
+    state.cloudMemeHashes[memeId] = hash;
+  },
+
   setFontFamilies(state, fontFamilies) {
     state.fontFamilies = fontFamilies;
   }
