@@ -25,7 +25,13 @@
     }
   ],
   "routes": [
-    { "src": "/r/(.*)", "dest": "packages/server/src/index.js" },
+    {
+      "src": "/r/(.*)",
+      "dest": "packages/server/src/index.js",
+      "headers": {
+        "cache-control": "public, max-age=31536000, immutable"
+      }
+    },
     { "src": "/(.*)", "dest": "packages/client/$1" }
   ]
 }
