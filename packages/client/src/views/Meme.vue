@@ -1,24 +1,16 @@
 <template>
   <v-layout align-center>
     <v-flex d-flex fill-height>
-      <v-layout column v-if="meme">
-        <Toolbar
-          :meme="meme"
-          :has-changed="hasChanged"
-          @render="$store.dispatch('RENDER', meme)"
-          @restore="$store.dispatch('RESTORE_FROM_CLOUD', meme.id)"
-          @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
-          @update:caption="handleUpdateCaption"
-        />
-        <v-flex
-          d-flex
-          pa-3
-          align-center
-          align-self-center
-        >
-          <Stage :meme="meme" @update:caption="handleUpdateCaption" />
-        </v-flex>
-      </v-layout>
+      <Meme
+        v-if="meme"
+        :meme="meme"
+        :caption-text="captionText"
+        :has-changed="hasChanged"
+        @render="$store.dispatch('RENDER', meme)"
+        @restore="$store.dispatch('RESTORE_FROM_CLOUD', meme.id)"
+        @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
+        @update:caption="handleUpdateCaption"
+      />
     </v-flex>
   </v-layout>
 </template>
@@ -26,13 +18,11 @@
 <script>
 import { omit, merge } from 'lodash';
 import hash from 'object-hash';
-import Toolbar from '../components/Meme/Toolbar';
-import Stage from '../components/Meme/Stage';
+import Meme from '../components/Meme/Meme';
 
 export default {
   components: {
-    Toolbar,
-    Stage,
+    Meme,
   },
   data() {
     return {
@@ -69,36 +59,21 @@ export default {
       deep: true,
       handler(memes) {
         this.handleUpdateMeme(memes[this.memeId]);
-      }
-    }
+      },
+    },
   },
   methods: {
-    handleUpdateMeme(meme) {
-      if (!meme) {
+    async handleUpdateMeme(updatedMeme) {
+      if (!updatedMeme) {
         return;
       }
-      this.meme = merge({}, meme, {
+      this.meme = merge({}, updatedMeme, {
         caption: {
           text: this.captionText,
         },
       });
     },
-    async handleUpdateCaption(captionAttrs = {}) {
-      let updatedMeme = {
-        ...this.meme,
-        id: this.memeId,
-        caption: {
-          ...this.meme.caption,
-          ...captionAttrs,
-        },
-        webfont: {
-          ...this.meme.webfont,
-          google: {
-            families: [captionAttrs.fontFamily],
-          },
-        },
-      };
-
+    async handleUpdateCaption(updatedMeme) {
       await this.$store.dispatch('UPDATE_MEME', updatedMeme);
       this.handleUpdateMeme(updatedMeme);
     },

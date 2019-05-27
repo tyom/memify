@@ -1,88 +1,30 @@
 <template>
   <div class="Toolbar">
-    <v-toolbar
-      dense
-      flat
-      class="Toolbar"
-    >
-      <h2>{{ meme.title }}</h2>
-      <v-spacer />
-
-      <template v-if="$route.params.memeId !== 'snapshot'">
-        <v-tooltip bottom v-if="hasChanged">
-          <template v-slot:activator="{ on }">
-            <v-btn
-              v-on="on"
-              flat
-              aria-label="save edits to cloud"
-              @click="$emit('save')"
-            >
-              <v-icon left>
-                cloud_upload
-              </v-icon>
-              Save
-            </v-btn>
-          </template>
-          <span>Save edits</span>
-        </v-tooltip>
-
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn
-              v-on="on"
-              flat
-              aria-label="restore edits from cloud"
-              @click="$emit('restore')"
-            >
-              <v-icon left>
-                cloud_download
-              </v-icon>
-              Restore
-            </v-btn>
-          </template>
-          <span>Restore edits</span>
-        </v-tooltip>
-      </template>
-
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on }">
-          <v-btn
-            v-on="on"
-            flat
-            aria-label="render image"
-            @click="$emit('render')"
-          >
-            <v-icon left>
-              photo_camera
-            </v-icon>
-            Render
-          </v-btn>
-        </template>
-        <span>Render image</span>
-      </v-tooltip>
-    </v-toolbar>
-
+    <ToolbarActions
+      v-if="meme.id"
+      :title="meme.title"
+      :meme-id="meme.id"
+      :has-changed="hasChanged"
+      @save="$emit('save')"
+      @restore="$emit('restore')"
+      @render="$emit('render')"
+    />
     <v-divider />
-
-    <v-toolbar
-      dense
-      flat
-      color="rgba(255, 255, 255, 0.04)"
-    >
-      <CaptionControl
-        :caption="meme.caption"
-        @update:caption="$emit('update:caption', $event)"
-      />
-    </v-toolbar>
+    <ToolbarCaptionControls
+      :caption="meme.caption"
+      @update:caption="$emit('update:caption', $event)"
+    />
   </div>
 </template>
 
 <script>
-import CaptionControl from './CaptionControl';
+import ToolbarActions from './ToolbarActions';
+import ToolbarCaptionControls from './ToolbarCaptionControls';
 
 export default {
   components: {
-    CaptionControl,
+    ToolbarActions,
+    ToolbarCaptionControls,
   },
   props: {
     meme: {

@@ -3,7 +3,7 @@ import Vuetify from 'vuetify';
 import { firestorePlugin } from 'vuefire';
 import store from './store';
 import router from './router';
-import App from './views/App';
+import App from './App';
 import 'vuetify/dist/vuetify.min.css';
 
 Vue.use(Vuetify);

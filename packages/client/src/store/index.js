@@ -13,6 +13,11 @@ const vuexLocal = new VuexPersistence({
 export const state = {
   preset: undefined,
   memes: {},
+  newMeme: {
+    caption: {
+      fill: '#fff',
+    }
+  },
   cloudMemeHashes: {},
   fontFamilies: [],
 };

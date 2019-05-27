@@ -103,6 +103,20 @@ export default {
     }
   },
 
+  UPDATE_NEW_MEME({ commit }, updatedMeme) {
+    const { query } = router.currentRoute;
+    // update URL
+    router.replace({
+      name: 'new',
+      query: {
+        ...query,
+        text: updatedMeme.caption.text,
+      },
+    });
+
+    commit('setNewMeme', updatedMeme);
+  },
+
   UPDATE_MEME_IN_PRESET({ commit, state }, { presetId, updatedMeme }) {
     if (!presetId) {
       return;

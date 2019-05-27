@@ -7,6 +7,10 @@ export default {
     state.memes[meme.id] = meme;
   },
 
+  setNewMeme(state, meme) {
+    state.newMeme = meme;
+  },
+
   setSnapshotMemeId(state, memeId) {
     state.snapshotId = memeId;
   },

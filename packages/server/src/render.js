@@ -48,6 +48,7 @@ export async function renderImage(composerUrl, { format = 'jpeg', memeId, query 
     await browser.close();
     return file;
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(error);
     await browser.close();
     return 'no image';

@@ -26,12 +26,12 @@ export default {
   watch: {
     async meme(meme, prevMeme) {
       if (!isEqual(meme.webfont, prevMeme.webfont)) {
-        await loadWebFont(this.meme.webfont);
+        await loadWebFont(meme.webfont);
       }
+      this.updateCaption(meme.caption);
       if (meme.id !== prevMeme.id) {
-        return this.buildStage();
+        this.buildStage();
       }
-      this.updateCaption(this.meme.caption);
     },
   },
   async mounted() {
