@@ -1,10 +1,10 @@
 <template>
-  <div :class="{'loaded': loaded}" class="Stage"></div>
+  <div :class="{ loaded: loaded }" class="Stage"></div>
 </template>
 
 <script>
 import Konva from 'konva';
-import { isEqual, debounce } from 'lodash';
+import { isEqual, debounce, merge } from 'lodash';
 import { createStageComponents, populateLayer, createImage } from '../../konva';
 import { loadWebFont } from '../../utils';
 
@@ -24,31 +24,45 @@ export default {
     };
   },
   watch: {
-    async meme(meme, prevMeme) {
-      if (!isEqual(meme.webfont, prevMeme.webfont)) {
-        await loadWebFont(meme.webfont);
-      }
-      this.updateCaption(meme.caption);
-      if (meme.id !== prevMeme.id) {
-        this.buildStage();
-      }
+    meme: {
+      deep: true,
+      async handler(meme, prevMeme) {
+        const isNextFontFamily = !isEqual(meme.webfont, prevMeme.webfont);
+        const isNextMeme = meme.id !== prevMeme.id;
+
+        if (isNextMeme) {
+          await this.buildStage();
+        }
+        this.updateStage(isNextFontFamily);
+      },
     },
+    'meme.image.src'() {
+      return this.buildStage();
+    },
+    '$route.query'() {
+      this.updateCaption();
+    }
   },
   async mounted() {
-    await loadWebFont(this.meme.webfont);
-    this.buildStage();
+    await this.buildStage();
   },
   methods: {
+    async updateStage(reloadFont = false) {
+      if (reloadFont) {
+        await loadWebFont(this.meme.webfont);
+      }
+      this.updateCaption(this.meme.caption);
+    },
     async buildStage() {
       this.loaded = false;
 
-      if (!this.meme.id) {
-        return;
-      }
+      await loadWebFont(this.meme.webfont);
+
       const { stage, layer, caption } = await createStageComponents({
         el: this.$el,
         meme: this.meme,
       });
+
       this.stage = stage;
       this.layer = layer;
       this.caption = caption;
@@ -62,20 +76,39 @@ export default {
         ...this.meme.caption,
       });
 
+      const layerImage = this.layer.find('Image')[0];
+
+      if (layerImage && !(this.meme.image.width || this.meme.image.height)) {
+        this.stage.width(layerImage.getWidth());
+        this.stage.height(layerImage.getHeight());
+      }
+
       this.loaded = true;
     },
 
     async buildLayer(meme = {}) {
-      const image = await createImage({
-        ...meme.image,
-        name: 'image',
-      });
+      let image;
+      let overlayImage;
+      try {
+        image = await createImage({
+          ...meme.image,
+          name: 'image',
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(`Failed to load image: '${meme.image.src}'`);
+      }
 
-      const overlayImage = await createImage({
-        ...(meme.overlayImage || {}),
-        name: 'overlay',
-        listening: false,
-      });
+      try {
+        overlayImage = await createImage({
+          ...(meme.overlayImage || {}),
+          name: 'overlay',
+          listening: false,
+        });
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.log(`Failed to load overlay image:'${meme.overlayImage.src}'`);
+      }
 
       const layerComponents = [image, this.caption, overlayImage].filter(
         Boolean
@@ -113,7 +146,8 @@ export default {
       this.stage.draw();
     },
 
-    updateCaption({ text, fontSize, ...otherAttrs } = {}) {
+    updateCaption({ fontSize, ...otherAttrs } = this.meme.caption) {
+      const { text } = this.$route.query;
       if (!this.caption) {
         return;
       }
@@ -121,16 +155,21 @@ export default {
         fontSize === 'auto' ? this.getAutoFontSize(text) : fontSize;
 
       this.caption.setAttrs({
+        ...otherAttrs,
         text,
         fontSize: captionFontSize,
-        ...otherAttrs,
       });
 
       this.layer.draw();
     },
 
     emitUpdate() {
-      this.$emit('update:caption', this.caption.attrs);
+      this.$emit(
+        'update',
+        merge({}, this.meme, {
+          caption: this.caption.attrs,
+        })
+      );
     },
 
     getAutoFontSize(text) {

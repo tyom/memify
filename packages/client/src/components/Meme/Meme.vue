@@ -8,18 +8,34 @@
       @save="$emit('save', meme)"
       @update:caption="handleUpdateCaption"
     />
-    <v-flex
-      d-flex
-      pa-3
+    <v-layout
+      column
       align-center
-      align-self-center
+      justify-center
+      pa-4
     >
-      <Stage :meme="meme" @update:caption="$emit('update:caption', $event)" />
-    </v-flex>
+      <div v-if="!meme.id" style="width: 50%">
+        <v-text-field
+          :value="meme.title"
+          label="Title"
+          @change="handleTitleUpdate"
+        />
+        <v-text-field
+          :value="meme.image.src"
+          label="Image URL"
+          @change="handleImageSettingsUpdate"
+        />
+      </div>
+      <Stage
+        :meme="meme"
+        @update="$emit('update', $event)"
+      />
+    </v-layout>
   </v-layout>
 </template>
 
 <script>
+import { merge } from 'lodash';
 import Toolbar from './Toolbar';
 import Stage from './Stage';
 
@@ -33,10 +49,6 @@ export default {
       type: Object,
       default: () => ({}),
     },
-    captionText: {
-      type: String,
-      default: '',
-    },
     hasChanged: {
       type: Boolean,
       default: false,
@@ -46,22 +58,36 @@ export default {
     handleUpdateCaption(captionAttrs) {
       const updatedMeme = {
         ...this.meme,
+        image: this.meme.image,
         caption: {
           ...this.meme.caption,
           ...captionAttrs,
         },
       };
 
-      if (this.meme.webfont) {
+      if (captionAttrs.fontFamily) {
         updatedMeme.webfont = {
-          ...this.meme.webfont,
           google: {
             families: [captionAttrs.fontFamily],
           },
-        }
+        };
       }
 
-      this.$emit('update:caption', updatedMeme);
+      this.$emit('update', updatedMeme);
+    },
+    handleTitleUpdate(title) {
+      const updatedMeme = merge(this.meme, {
+        title,
+      });
+      this.$emit('update', updatedMeme);
+    },
+    handleImageSettingsUpdate(src) {
+      const updatedMeme = merge(this.meme, {
+        image: {
+          src,
+        },
+      });
+      this.$emit('update', updatedMeme);
     },
   },
 };

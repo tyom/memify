@@ -26,7 +26,10 @@ async function getDocumentFromCloud(collectionName, itemId) {
   if (!cloudPresetDoc.exists) {
     throw new Error(`Couldn't locate ${itemId} in ${collectionName}`);
   }
-  return cloudPresetDoc.data();
+  return {
+    id: cloudPresetDoc.id,
+    ...cloudPresetDoc.data(),
+  };
 }
 
 export default {
@@ -81,17 +84,7 @@ export default {
   },
 
   UPDATE_MEME({ commit, dispatch }, updatedMeme) {
-    const { params, query } = router.currentRoute;
-
-    // update URL
-    router.replace({
-      name: params.presetId ? 'preset-meme' : 'meme',
-      params,
-      query: {
-        ...query,
-        text: updatedMeme.caption.text,
-      },
-    });
+    const { params } = router.currentRoute;
 
     commit('setMeme', updatedMeme);
 
@@ -101,6 +94,19 @@ export default {
         updatedMeme,
       });
     }
+  },
+
+  UPDATE_CAPTION_TEXT(context, text) {
+    const { params, query } = router.currentRoute;
+
+    router.replace({
+      name: params.presetId ? 'preset-meme' : 'meme',
+      params,
+      query: {
+        ...query,
+        text,
+      },
+    });
   },
 
   UPDATE_NEW_MEME({ commit }, updatedMeme) {
@@ -118,7 +124,7 @@ export default {
   },
 
   UPDATE_MEME_IN_PRESET({ commit, state }, { presetId, updatedMeme }) {
-    if (!presetId) {
+    if (!presetId || !state.preset) {
       return;
     }
     const presetMemesWithUpdate = state.preset.memes.map(meme =>
@@ -143,10 +149,8 @@ export default {
     window.location.href = `/r/snapshot?d=${snapshotBase64}`;
   },
 
-  SAVE_TO_CLOUD({ commit }, meme) {
-    if (!meme.id) {
-      throw new Error('Meme ID is missing');
-    }
+  async SAVE_TO_CLOUD({ commit }, meme) {
+    const { query } = router.currentRoute;
     const updatedMeme = {
       ...meme,
       caption: {
@@ -154,12 +158,23 @@ export default {
         text: '',
       },
     };
-    db.collection('memes')
-      .doc(meme.id)
-      .set(updatedMeme);
+
+    let record;
+    if (!updatedMeme.id) {
+      record = await db.collection('memes').add(updatedMeme);
+    } else {
+      await db
+        .collection('memes')
+        .doc(meme.id)
+        .set(updatedMeme);
+    }
 
     const updatedMemeMemeHash = hash(omit(updatedMeme, 'caption.text'));
     commit('setCloudMemeHash', { memeId: meme.id, hash: updatedMemeMemeHash });
+
+    if (record) {
+      router.push({ name: 'meme', params: { memeId: record.id }, query });
+    }
   },
 
   async RESTORE_FROM_CLOUD({ commit, dispatch }, memeId) {

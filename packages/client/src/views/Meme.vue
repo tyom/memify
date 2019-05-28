@@ -4,21 +4,20 @@
       <Meme
         v-if="meme"
         :meme="meme"
-        :caption-text="captionText"
         :has-changed="hasChanged"
         @render="$store.dispatch('RENDER', meme)"
         @restore="$store.dispatch('RESTORE_FROM_CLOUD', meme.id)"
         @save="$store.dispatch('SAVE_TO_CLOUD', meme)"
-        @update:caption="handleUpdateCaption"
+        @update="handleUpdateMeme"
       />
     </v-flex>
   </v-layout>
 </template>
 
 <script>
-import { omit, merge } from 'lodash';
+import { omit } from 'lodash';
 import hash from 'object-hash';
-import Meme from '../components/Meme/Meme';
+import Meme from '../components/Meme';
 
 export default {
   components: {
@@ -32,9 +31,6 @@ export default {
   computed: {
     memeId() {
       return this.$route.params.memeId;
-    },
-    captionText() {
-      return this.$route.query.text;
     },
     hasChanged() {
       if (this.meme.id !== this.memeId) {
@@ -55,27 +51,14 @@ export default {
         this.handleUpdateMeme(currentMeme);
       },
     },
-    '$store.state.memes': {
-      deep: true,
-      handler(memes) {
-        this.handleUpdateMeme(memes[this.memeId]);
-      },
-    },
   },
   methods: {
     async handleUpdateMeme(updatedMeme) {
       if (!updatedMeme) {
         return;
       }
-      this.meme = merge({}, updatedMeme, {
-        caption: {
-          text: this.captionText,
-        },
-      });
-    },
-    async handleUpdateCaption(updatedMeme) {
-      await this.$store.dispatch('UPDATE_MEME', updatedMeme);
-      this.handleUpdateMeme(updatedMeme);
+      this.meme = updatedMeme;
+      await this.$store.dispatch('UPDATE_MEME', this.meme);
     },
   },
 };

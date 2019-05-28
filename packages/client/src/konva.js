@@ -16,8 +16,8 @@ export async function createStageComponents({ el, meme }) {
   return {
     stage: new Konva.Stage({
       container: el,
-      width: meme.image.width,
-      height: meme.image.height,
+      width: meme.image && meme.image.width,
+      height: meme.image && meme.image.height,
     }),
 
     layer: new Konva.Layer(),
@@ -60,7 +60,13 @@ export async function createImage({
     image: imageEl,
   });
 
-  return new Promise(resolve => {
+  image.setAttrs({
+    width: image.getWidth(),
+    height: image.getHeight(),
+  });
+
+  return new Promise((resolve, reject) => {
     imageEl.onload = () => resolve(image);
+    imageEl.onerror = reject;
   });
 }

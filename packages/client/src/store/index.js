@@ -14,9 +14,23 @@ export const state = {
   preset: undefined,
   memes: {},
   newMeme: {
+    image: {
+      src: '',
+    },
     caption: {
-      fill: '#fff',
-    }
+      fill: '#fcc400',
+      fontFamily: 'Acme',
+      fontSize: 30,
+      height: 100,
+      align: 'center',
+      x: 20,
+      y: 20,
+    },
+    webfont: {
+      google: {
+        families: ['Acme'],
+      },
+    },
   },
   cloudMemeHashes: {},
   fontFamilies: [],

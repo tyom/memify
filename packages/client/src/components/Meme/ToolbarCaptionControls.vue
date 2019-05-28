@@ -115,14 +115,14 @@
       </v-flex>
       <v-flex grow>
         <v-text-field
-          :value="caption.text"
+          :value="captionText"
           autofocus
           flat
           clearable
           solo-inverted
           hide-details
           label="Caption"
-          @input="handleCaptionUpdate({ text: $event })"
+          @input="handleCaptionText"
         />
       </v-flex>
     </v-layout>
@@ -146,6 +146,9 @@ export default {
     fillColour() {
       return this.caption.fill || '#fff';
     },
+    captionText() {
+      return this.$route.query.text;
+    }
   },
   data() {
     return {
@@ -168,6 +171,9 @@ export default {
     handleCaptionUpdate(values = {}) {
       this.$emit('update:caption', { ...this.caption, ...values });
     },
+    handleCaptionText(text) {
+      return this.$store.dispatch('UPDATE_CAPTION_TEXT', text);
+    }
   },
 };
 </script>
