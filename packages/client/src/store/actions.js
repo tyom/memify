@@ -137,16 +137,18 @@ export default {
   },
 
   RENDER(context, meme) {
-    const memeSnapshot = {
-      ...meme,
-      caption: {
-        ...meme.caption,
-        text: router.currentRoute.query.text,
-      },
-    };
-    const snapshotBase64 = Base64.encodeURI(JSON.stringify(memeSnapshot));
-
-    window.location.href = `/r/snapshot?d=${snapshotBase64}`;
+    // const memeSnapshot = {
+    //   ...meme,
+    //   caption: {
+    //     ...meme.caption,
+    //     text: router.currentRoute.query.text,
+    //   },
+    // };
+    // const snapshotBase64 = Base64.encodeURI(JSON.stringify(memeSnapshot));
+    // window.location.href = `/r/snapshot?d=${snapshotBase64}`;
+    window.location.href = router
+      .resolve(router.currentRoute)
+      .href.replace('#', 'r');
   },
 
   async SAVE_TO_CLOUD({ commit }, meme) {
