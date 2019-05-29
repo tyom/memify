@@ -22,11 +22,7 @@
           }"
         >
           <v-img :src="meme.image.src" height="250px" />
-          <v-container
-            fill-height
-            fluid
-            pa-2
-          >
+          <v-container pa-2>
             {{ meme.title }}
           </v-container>
         </v-card>
