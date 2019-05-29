@@ -1,6 +1,7 @@
 <template>
   <v-layout column>
     <Toolbar
+      v-if="!snapshot"
       :meme="meme"
       :has-changed="hasChanged"
       @render="$emit('render', meme)"
@@ -28,6 +29,7 @@
       </div>
       <Stage
         :meme="meme"
+        :snapshot="snapshot"
         @update="$emit('update', $event)"
       />
     </v-layout>
@@ -48,6 +50,10 @@ export default {
     meme: {
       type: Object,
       default: () => ({}),
+    },
+    snapshot: {
+      type: Boolean,
+      default: false,
     },
     hasChanged: {
       type: Boolean,

@@ -5,6 +5,7 @@
         v-if="meme"
         :meme="meme"
         :has-changed="hasChanged"
+        :snapshot="$route.params.memeId === 'snapshot'"
         @render="$store.dispatch('RENDER', meme)"
         @restore="$store.dispatch('RESTORE_FROM_CLOUD', meme.id)"
         @save="$store.dispatch('SAVE_TO_CLOUD', meme)"

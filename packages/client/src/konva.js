@@ -1,6 +1,6 @@
 import Konva from 'konva';
 
-export async function createStageComponents({ el, meme }) {
+export async function createStageComponents({ el, meme, isSnapshot = false }) {
   if (!meme) {
     throw new Error('No preset in `createStageComponents`');
   }
@@ -27,6 +27,7 @@ export async function createStageComponents({ el, meme }) {
       text: '',
       name: 'textOverlay',
       draggable: true,
+      listening: !isSnapshot,
     }),
   };
 }

@@ -14,6 +14,10 @@ export default {
       type: Object,
       default: () => ({}),
     },
+    snapshot: {
+      type: Boolean,
+      default: false,
+    }
   },
   data() {
     return {
@@ -61,6 +65,7 @@ export default {
       const { stage, layer, caption } = await createStageComponents({
         el: this.$el,
         meme: this.meme,
+        isSnapshot: this.snapshot,
       });
 
       this.stage = stage;
@@ -70,7 +75,10 @@ export default {
       const composedLayer = await this.buildLayer(this.meme);
       this.stage.add(composedLayer);
 
-      this.setUpEvents();
+      if (!this.snapshot) {
+        this.setUpEvents();
+      }
+
       this.fitStageToScreen();
       this.updateCaption({
         ...this.meme.caption,
@@ -147,18 +155,23 @@ export default {
     },
 
     updateCaption({ fontSize, ...otherAttrs } = this.meme.caption) {
-      const { text } = this.$route.query;
       if (!this.caption) {
         return;
       }
+      const { text } = this.$route.query;
       const captionFontSize =
         fontSize === 'auto' ? this.getAutoFontSize(text) : fontSize;
 
       this.caption.setAttrs({
         ...otherAttrs,
-        text,
         fontSize: captionFontSize,
       });
+
+      if (!this.snapshot) {
+        this.caption.setAttrs({
+          text,
+        });
+      }
 
       this.layer.draw();
     },
