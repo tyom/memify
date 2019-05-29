@@ -2,7 +2,7 @@ import Vue from 'vue';
 import VueRouter from 'vue-router';
 import Meme from './views/Meme';
 import Preset from './views/Preset';
-import Home from './views/Home';
+import New from './views/New';
 import PresetIndex from './views/PresetIndex';
 
 Vue.use(VueRouter);
@@ -12,7 +12,7 @@ export default new VueRouter({
     {
       path: '/new',
       name: 'new',
-      component: Home,
+      component: New
     },
     {
       path: '/preset/:presetId',
@@ -35,5 +35,9 @@ export default new VueRouter({
       name: 'meme',
       component: Meme,
     },
+    {
+      path: '',
+      redirect: { name: 'new' },
+    }
   ],
 });

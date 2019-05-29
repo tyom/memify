@@ -18,7 +18,7 @@
         <v-text-field
           :value="meme.title"
           label="Title"
-          @change="handleTitleUpdate"
+          @input="handleTitleUpdate"
         />
         <v-text-field
           :value="meme.image.src"

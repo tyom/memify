@@ -2,8 +2,8 @@ import to from 'await-to-js';
 import { get, omit } from 'lodash';
 import hash from 'object-hash';
 import { Base64 } from 'js-base64';
-import db from '../store/firestore';
 import router from '../router';
+import db from './firestore';
 
 const GOOGLE_API_KEY = process.env.VUE_APP_GOOGLE_API_KEY;
 const GOOGLE_FONTS_ENDPOINT = `https://www.googleapis.com/webfonts/v1/webfonts?key=${GOOGLE_API_KEY}`;
@@ -98,9 +98,16 @@ export default {
 
   UPDATE_CAPTION_TEXT(context, text) {
     const { params, query } = router.currentRoute;
+    let routeName = 'new';
+
+    if (params.presetId) {
+      routeName = 'preset-meme';
+    } else if (params.memeId) {
+      routeName = 'meme';
+    }
 
     router.replace({
-      name: params.presetId ? 'preset-meme' : 'meme',
+      name: routeName,
       params,
       query: {
         ...query,
@@ -136,7 +143,7 @@ export default {
     });
   },
 
-  RENDER(context, meme) {
+  RENDER() {
     // const memeSnapshot = {
     //   ...meme,
     //   caption: {

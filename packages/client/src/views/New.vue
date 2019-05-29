@@ -2,7 +2,7 @@
   <v-layout justify-center>
     <v-flex lg8 pa-4>
       <h1 class="mb-4 text-xs-center">
-        Create a new meme
+        Create a new meme{{ memeTitle }}
       </h1>
       <v-card>
         <Meme :meme="meme" @update="handleUpdate" />
@@ -39,6 +39,9 @@ export default {
           text: this.$route.query.text,
         },
       });
+    },
+    memeTitle() {
+      return this.meme.title ? `: ${this.meme.title}` : '';
     },
   },
   methods: {
