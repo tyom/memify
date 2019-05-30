@@ -192,7 +192,7 @@ export default {
       if (textLines.length === 0) {
         return;
       }
-      const { minFontSize = 12, maxFontSize = 60 } = this.caption;
+      const { minFontSize = 12, maxFontSize = 60 } = this.meme.caption;
       let fontSize = box.width / (text.length * 0.8);
       if (fontSize < minFontSize) {
         fontSize = minFontSize;
